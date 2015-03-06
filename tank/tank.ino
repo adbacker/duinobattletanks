@@ -24,6 +24,29 @@
 #include <RF24.h>
 #include <SPI.h>
 #include <IRremote.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
+#include <SoftEasyTransfer.h>
+SoftwareSerial mySerial(5, 6);
+
+/*   For Arduino 22 and older, do this:   */
+//#include <NewSoftSerial.h>
+//NewSoftSerial mySerial(2, 3);
+
+
+
+//create object
+SoftEasyTransfer ET;
+
+struct RECEIVE_DATA_STRUCTURE{
+	//put your variable definitions here for the data you want to send
+	//THIS MUST BE EXACTLY THE SAME ON THE OTHER ARDUINO
+	int blinks;
+	int pause;
+};
+
+//give a name to the group of data
+RECEIVE_DATA_STRUCTURE mydata;
 
 /*-----( Declare Constants and Pin Numbers )-----*/
 
@@ -74,14 +97,14 @@ int LEFT_SHIELD_PIN = 4;
 int RIGHT_SHIELD_PIN = 7;
 int BACK_SHIELD_PIN = 2;
 
-IRrecv shield_front(FRONT_SHIELD_PIN);
+//IRrecv shield_front(FRONT_SHIELD_PIN);
 //IRrecv shield_back(BACK_SHIELD_PIN);
 //IRrecv shield_left(LEFT_SHIELD_PIN);
 //IRrecv shield_right(RIGHT_SHIELD_PIN);
-decode_results front_results;
+//decode_results front_results;
 //decode_results back_results;
-decode_results left_results;
-decode_results right_results;
+//decode_results left_results;
+//decode_results right_results;
 unsigned long _lastHitTime = 0L;
 
 
@@ -117,21 +140,27 @@ bool justHit=false;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
-  
+
   Serial.begin(57600);
   delay(1000);
   
   // MOTOR CONTROLLER setup BEGIN
-  pinMode(ENA, OUTPUT);
-  pinMode(ENB, OUTPUT);
+  //pinMode(ENA, OUTPUT);
+  //pinMode(ENB, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
   // MOTOR CONTROLLER setup END
   
-  Serial.println("starting IR...");
-  shield_front.enableIRIn(); // Start the receiver
+  //Easy Transfer library setup
+  mySerial.begin(9600);
+  //start the library, pass in the data details and the name of the serial port.
+  ET.begin(details(mydata), &mySerial);
+  //END Easy transfer library setup
+
+  //Serial.println("starting IR...");
+  //shield_front.enableIRIn(); // Start the receiver
   //shield_back.enableIRIn(); // Start the receiver
   //shield_left.enableIRIn(); // Start the receiver
   //shield_right.enableIRIn(); // Start the receiver
@@ -170,7 +199,7 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   check_network();  //check for network updates
   if (controller[0] == 0)
   {
-    allMotorStop();
+    //allMotorStop();
   }
   //check to see if we've been hit
   pollReceivers();
@@ -180,6 +209,9 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 
 
 /*-----( Declare User-written Functions )-----*/
+
+void receive(int numBytes) {}
+
 void registerHit(long encodedshot, int side)
 {
   //check to see if it's been more than 100ms since the last hit
@@ -206,7 +238,18 @@ void registerHit(long encodedshot, int side)
 
 void pollReceivers()
 {
-  if (shield_front.decode(&front_results)) {
+	if (ET.receiveData()){
+		//this is how you access the variables. [name of the group].[variable name]
+		//since we have data, we will blink it out. 
+		Serial.print("pause: ");
+		Serial.print(mydata.pause);
+		Serial.print("\t blink: ");
+		Serial.println(mydata.blinks);
+	}
+	
+	
+	
+	/*if (shield_front.decode(&front_results)) {
     //Serial.println(front_results.value, HEX);
     //dump(&front_results,0,'f');
     //if (front_results.decode_type == SONY) {
@@ -216,7 +259,7 @@ void pollReceivers()
    // }
     shield_front.resume(); // Receive the next value
   }
-  /*
+  
   if (shield_back.decode(&back_results)) {
     //Serial.println(back_results.value, HEX);
 //    dump(&back_results,1,'b');
