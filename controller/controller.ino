@@ -72,7 +72,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   pinMode(trigger_pin,INPUT_PULLUP);
   pinMode(weapswitch_pin,INPUT_PULLUP);
   
-  //Serial.begin(57600);
+  Serial.begin(57600);
   SPI.begin();
   radio.begin();
   network.begin(/*channel*/ 90, /*node address*/ this_node);

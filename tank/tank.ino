@@ -24,29 +24,24 @@
 #include <RF24.h>
 #include <SPI.h>
 #include <IRremote.h>
-#include <Wire.h>
+//#include <Wire.h>
 #include <SoftwareSerial.h>
 #include <SoftEasyTransfer.h>
-SoftwareSerial mySerial(5, 6);
 
-/*   For Arduino 22 and older, do this:   */
-//#include <NewSoftSerial.h>
-//NewSoftSerial mySerial(2, 3);
-
-
+SoftEasyTransfer ET;
+SoftwareSerial mySerial(7, 8);
 
 //create object
-SoftEasyTransfer ET;
-
 struct RECEIVE_DATA_STRUCTURE{
-	//put your variable definitions here for the data you want to send
-	//THIS MUST BE EXACTLY THE SAME ON THE OTHER ARDUINO
-	int blinks;
-	int pause;
+  //put your variable definitions here for the data you want to send
+  //THIS MUST BE EXACTLY THE SAME ON THE OTHER ARDUINO
+  long encoded;
+  int side;
 };
 
 //give a name to the group of data
-RECEIVE_DATA_STRUCTURE mydata;
+RECEIVE_DATA_STRUCTURE myReceiveData;
+
 
 /*-----( Declare Constants and Pin Numbers )-----*/
 
@@ -92,19 +87,6 @@ float speedpercent;
 /////////////////////////////////////////
 IRsend irsend; // irsend == cannon!
 
-int FRONT_SHIELD_PIN = 8;
-int LEFT_SHIELD_PIN = 4;
-int RIGHT_SHIELD_PIN = 7;
-int BACK_SHIELD_PIN = 2;
-
-//IRrecv shield_front(FRONT_SHIELD_PIN);
-//IRrecv shield_back(BACK_SHIELD_PIN);
-//IRrecv shield_left(LEFT_SHIELD_PIN);
-//IRrecv shield_right(RIGHT_SHIELD_PIN);
-//decode_results front_results;
-//decode_results back_results;
-//decode_results left_results;
-//decode_results right_results;
 unsigned long _lastHitTime = 0L;
 
 
@@ -117,7 +99,7 @@ unsigned long _lastHitTime = 0L;
 // RADIO assignments BEGIN
 /////////////////////////////////////////
 
-#define CE_PIN   9
+#define CE_PIN 9
 #define CSN_PIN 10
 
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
@@ -127,6 +109,9 @@ const uint16_t this_node = 3;
 // Address of the other node
 const uint16_t other_node = 0;
 
+unsigned long lastShootingValue; //very last controller trigger value
+unsigned long g_encoded; //global...don't ask why.  just...don't.
+long firing;//are we firing?
 long controller[3];  // 3 element array holding Joystick readings
 long hit[2]; //2 element array holding the encoded hit, and the side that was hit
 
@@ -156,17 +141,10 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   //Easy Transfer library setup
   mySerial.begin(9600);
   //start the library, pass in the data details and the name of the serial port.
-  ET.begin(details(mydata), &mySerial);
+  ET.begin(details(myReceiveData), &mySerial);
   //END Easy transfer library setup
 
-  //Serial.println("starting IR...");
-  //shield_front.enableIRIn(); // Start the receiver
-  //shield_back.enableIRIn(); // Start the receiver
-  //shield_left.enableIRIn(); // Start the receiver
-  //shield_right.enableIRIn(); // Start the receiver
-  // IR setup END
-  
-  
+
   //setup joystick min/max values for the 
   //"dead zone" around the center
   xmin = XAXIS_CENTER-XAXIS_DEADZONE;
@@ -176,7 +154,6 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   
   
   Serial.println("Nrf24L01 Receiver Starting");
-  
   // radio setup BEGIN
   SPI.begin();
   radio.begin();
@@ -185,6 +162,9 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   controller[0]=0;
   controller[1]=0;
   controller[2]=0;
+  g_encoded=0;
+  lastShootingValue=0;
+  firing=false;
   // radio setup END
   allMotorStop();
 }//--(end setup )---
@@ -199,11 +179,27 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   check_network();  //check for network updates
   if (controller[0] == 0)
   {
-    //allMotorStop();
+    allMotorStop();
   }
+  
+  //only shoot if the shot value != the very last one.  eg: trigger was still pulled
+  if (controller[2] != 0 && controller[2] != lastShootingValue) {
+    g_encoded=controller[2];
+    lastShootingValue=g_encoded;
+    firing=true;
+  } else if (controller[2] == 0) {
+    firing=false;
+  }
+ 
+  if (firing) {
+    Serial.print("pew pew!");
+    Serial.println(g_encoded);
+    irsend.sendSony(g_encoded,32);
+  } 
   //check to see if we've been hit
   pollReceivers();
-
+  
+  lastShootingValue=controller[2];
 }//--(end main loop )---
 
 
@@ -238,64 +234,16 @@ void registerHit(long encodedshot, int side)
 
 void pollReceivers()
 {
-	if (ET.receiveData()){
-		//this is how you access the variables. [name of the group].[variable name]
-		//since we have data, we will blink it out. 
-		Serial.print("pause: ");
-		Serial.print(mydata.pause);
-		Serial.print("\t blink: ");
-		Serial.println(mydata.blinks);
-	}
-	
-	
-	
-	/*if (shield_front.decode(&front_results)) {
-    //Serial.println(front_results.value, HEX);
-    //dump(&front_results,0,'f');
-    //if (front_results.decode_type == SONY) {
-    long encoded = front_results.value;
-    registerHit(encoded,0);
-    front_results.value = -1;
-   // }
-    shield_front.resume(); // Receive the next value
+  if (ET.receiveData()){
+    //this is how you access the variables. [name of the group].[variable name]
+    //since we have data, we will blink it out. 
+    Serial.print("encoded: ");
+    Serial.print(myReceiveData.encoded);
+    Serial.print("\t side: ");
+    Serial.println(myReceiveData.side);
+    registerHit(myReceiveData.encoded, myReceiveData.side);
   }
-  
-  if (shield_back.decode(&back_results)) {
-    //Serial.println(back_results.value, HEX);
-//    dump(&back_results,1,'b');
-    //if (front_results.decode_type == SONY) {
 
-    long encoded = back_results.value;
-    registerHit(encoded,1);
-    back_results.value = -1;
-   // }
-    shield_back.resume(); // Receive the next value
-  }
-  
-  if (shield_left.decode(&left_results)) {
-    //Serial.println("shield_left hit");
-    //Serial.println(left_results.value, HEX);
-    //dump(&left_results,2,'l');
-    //if (front_results.decode_type == SONY) {
-
-    registerHit(left_results.value,2);
-    left_results.value = -1;
-   // }
-    shield_left.resume(); // Receive the next value
-  }
-  
-  if (shield_right.decode(&right_results)) {
-    //Serial.println("shield_right hit");
-    //Serial.println(right_results.value, HEX);
-    //dump(&right_results,3,'r');
-    //if (front_results.decode_type == SONY) {
-
-    registerHit(right_results.value,3);
-    right_results.value = -1;
-    //}  
-    shield_right.resume(); // Receive the next value
-    }
-  */
 }
 
 void throttlemix(int xval, int yval) {
@@ -413,15 +361,17 @@ void check_network() {
   {
     //throttlemix(controller[0],controller[1]);
   }
-  if (controller[2] !=0)
+  /*if (controller[2] !=0)
   {
     //Fire!
     long encoded = long(controller[2]);
+    Serial.print("Firing: " );
+    Serial.println(encoded);
     //send the shot back to the sending tank for testing purposes
     //hit[0]=encoded;
     //justHit=true;
-    irsend.sendSony(encoded,32);  
-  }
+    irsend.sendSony(12345,32);  
+  }*/
   
 }
 

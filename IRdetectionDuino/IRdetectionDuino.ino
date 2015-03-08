@@ -28,17 +28,18 @@
 /////////////////////////////////////////////
 //  EasySend software serial setup BEGIN
 /////////////////////////////////////////////
-SoftwareSerial mySerial(10, 11);
+
+SoftwareSerial mySerial(4, 5);
+SoftEasyTransfer ET; 
 
 //create object
-SoftEasyTransfer ET; 
 
 struct SEND_DATA_STRUCTURE{
   //put your variable definitions here for the data you want to send
   //THIS MUST BE EXACTLY THE SAME ON THE OTHER ARDUINO
   long encoded;
   int side;
-  
+
 };
 SEND_DATA_STRUCTURE mydata;
 
@@ -50,21 +51,22 @@ SEND_DATA_STRUCTURE mydata;
 /////////////////////////////////////////
 // IR pin assignments BEGIN
 /////////////////////////////////////////
+IRsend irsend; // irsend == cannon!
+
 int FRONT_SHIELD_PIN = 6;
 int BACK_SHIELD_PIN = 7;
-int LEFT_SHIELD_PIN = 8;
-int RIGHT_SHIELD_PIN = 9;
+///int LEFT_SHIELD_PIN = 8;
+//int RIGHT_SHIELD_PIN = 9;
 
 IRrecv shield_front(FRONT_SHIELD_PIN);
 IRrecv shield_back(BACK_SHIELD_PIN);
-IRrecv shield_left(LEFT_SHIELD_PIN);
-IRrecv shield_right(RIGHT_SHIELD_PIN);
+//IRrecv shield_left(LEFT_SHIELD_PIN);
+//IRrecv shield_right(RIGHT_SHIELD_PIN);
 
 decode_results front_results;
 decode_results back_results;
-decode_results left_results;
-decode_results right_results;
-
+//decode_results left_results;
+//decode_results right_results;
 
 
 unsigned long _lastHitTime = 0L;
@@ -79,19 +81,22 @@ bool justHit=false;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
-  
-  Serial.begin(57600);
-  delay(1000);
+
   
   // IR setup BEGIN  
   Serial.println("starting IR...");
   shield_front.enableIRIn(); // Start the receiver
-  shield_back.enableIRIn(); // Start the receiver
-  shield_left.enableIRIn(); // Start the receiver
-  shield_right.enableIRIn(); // Start the receiver
+ shield_back.enableIRIn(); // Start the receiver
+  //shield_left.enableIRIn(); // Start the receiver
+ // shield_right.enableIRIn(); // Start the receiver
   // IR setup END
-  
-  Serial.println("Nrf24L01 Receiver Starting");
+    Serial.begin(57600);
+
+   Serial.println("starting mySerial..");
+   mySerial.begin(9600);
+   ET.begin(details(mydata), &mySerial);
+
+
   
 }//--(end setup )---
 
@@ -100,6 +105,13 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {
+  
+  unsigned long now = millis();
+  if (now%1000 == 0) {
+    Serial.print("polling...");
+    Serial.print(now/1000);
+    Serial.println("sec up..");   
+  }
   pollReceivers();
 }//--(end main loop )---
 
@@ -118,13 +130,17 @@ void registerHit(long encodedshot, int side)
   {
     _lastHitTime = now;
     //make sure we're sending good values
-    if (encodedshot > 0L && encodedshot < 4096L)
-    {  
+    //if (encodedshot > 0L && encodedshot < 4096L)
+    //{  
       mydata.encoded = encodedshot;
-      mydata.side = side; 
+      mydata.side = side;
+      Serial.print("encoded: ");
+      Serial.print(mydata.encoded);
+      Serial.print("\t side: ");
+      Serial.println(mydata.side); 
       //send the data
       ET.sendData();
-    }
+    //}
   }
 }
 
@@ -132,46 +148,29 @@ void registerHit(long encodedshot, int side)
 void pollReceivers()
 {
   if (shield_front.decode(&front_results)) {
-    //Serial.println(front_results.value, HEX);
-    //dump(&front_results,0,'f');
-    //if (front_results.decode_type == SONY) {
     long encoded = front_results.value;
     registerHit(encoded,0);
-   // }
     shield_front.resume(); // Receive the next value
   }
-  /*
+  
   if (shield_back.decode(&back_results)) {
-    //Serial.println(back_results.value, HEX);
-//    dump(&back_results,1,'b');
-    //if (front_results.decode_type == SONY) {
-
     long encoded = back_results.value;
     registerHit(encoded,1);
-    back_results.value = -1;
-   // }
     shield_back.resume(); // Receive the next value
-  }*/
-  
+  }
+  /*
   if (shield_left.decode(&left_results)) {
-    //Serial.println("shield_left hit");
-    //Serial.println(left_results.value, HEX);
-    //dump(&left_results,2,'l');
-    //if (front_results.decode_type == SONY) {
+    long encoded = left_results.value;
     registerHit(left_results.value,2);
-   // }
     shield_left.resume(); // Receive the next value
   }
   
+  
   if (shield_right.decode(&right_results)) {
-    //Serial.println("shield_right hit");
-    //Serial.println(right_results.value, HEX);
-    //dump(&right_results,3,'r');
-    //if (front_results.decode_type == SONY) {
+    long encoded = right_results.value;
     registerHit(right_results.value,3);
-    //}  
     shield_right.resume(); // Receive the next value
-    }
+    }*/
   
 }
 
