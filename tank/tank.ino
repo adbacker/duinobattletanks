@@ -105,7 +105,7 @@ unsigned long _lastHitTime = 0L;
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 RF24Network network(radio);
 // Address of our node
-const uint16_t this_node = 3;
+const uint16_t this_node = 1;
 // Address of the other node
 const uint16_t other_node = 0;
 

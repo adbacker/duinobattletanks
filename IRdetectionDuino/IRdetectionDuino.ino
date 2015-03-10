@@ -55,18 +55,18 @@ IRsend irsend; // irsend == cannon!
 
 int FRONT_SHIELD_PIN = 6;
 int BACK_SHIELD_PIN = 7;
-///int LEFT_SHIELD_PIN = 8;
-//int RIGHT_SHIELD_PIN = 9;
+int LEFT_SHIELD_PIN = 8;
+int RIGHT_SHIELD_PIN = 9;
 
 IRrecv shield_front(FRONT_SHIELD_PIN);
 IRrecv shield_back(BACK_SHIELD_PIN);
-//IRrecv shield_left(LEFT_SHIELD_PIN);
-//IRrecv shield_right(RIGHT_SHIELD_PIN);
+IRrecv shield_left(LEFT_SHIELD_PIN);
+IRrecv shield_right(RIGHT_SHIELD_PIN);
 
 decode_results front_results;
 decode_results back_results;
-//decode_results left_results;
-//decode_results right_results;
+decode_results left_results;
+decode_results right_results;
 
 
 unsigned long _lastHitTime = 0L;
@@ -84,13 +84,12 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
   
   // IR setup BEGIN  
-  Serial.println("starting IR...");
   shield_front.enableIRIn(); // Start the receiver
- shield_back.enableIRIn(); // Start the receiver
-  //shield_left.enableIRIn(); // Start the receiver
- // shield_right.enableIRIn(); // Start the receiver
+  shield_back.enableIRIn(); // Start the receiver
+  shield_left.enableIRIn(); // Start the receiver
+  shield_right.enableIRIn(); // Start the receiver
   // IR setup END
-    Serial.begin(57600);
+  //Serial.begin(57600);
 
    Serial.println("starting mySerial..");
    mySerial.begin(9600);
@@ -148,29 +147,37 @@ void registerHit(long encodedshot, int side)
 void pollReceivers()
 {
   if (shield_front.decode(&front_results)) {
-    long encoded = front_results.value;
-    registerHit(encoded,0);
+    if (front_results.decode_type == SONY) { //if we can't decode the type, it's not a good packet...
+      long encoded = front_results.value;
+      registerHit(encoded,0);
+    }
     shield_front.resume(); // Receive the next value
   }
   
   if (shield_back.decode(&back_results)) {
-    long encoded = back_results.value;
-    registerHit(encoded,1);
+    if (back_results.decode_type == SONY) { //if we can't decode the type, it's not a good packet...
+      long encoded = back_results.value;
+      registerHit(encoded,1);
+    }
     shield_back.resume(); // Receive the next value
   }
-  /*
+  
   if (shield_left.decode(&left_results)) {
-    long encoded = left_results.value;
-    registerHit(left_results.value,2);
+    if (left_results.decode_type == SONY) { //if we can't decode the type, it's not a good packet...
+      long encoded = left_results.value;
+      registerHit(left_results.value,2);
+    }
     shield_left.resume(); // Receive the next value
   }
   
   
   if (shield_right.decode(&right_results)) {
-    long encoded = right_results.value;
-    registerHit(right_results.value,3);
+    if (right_results.decode_type == SONY) { //if we can't decode the type, it's not a good packet...
+      long encoded = right_results.value;
+      registerHit(right_results.value,3);
+    }
     shield_right.resume(); // Receive the next value
-    }*/
+  }
   
 }
 

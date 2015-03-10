@@ -82,11 +82,9 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {  
+  network.update();     // Pump the network regularly
   if (! tank.isDead())
- { 
-    // Pump the network regularly
-    network.update();
-    
+ {     
     handleFire(); 
     handleWeaponSwitch();
     handleControllerUpdate(); //send controller & firing values
