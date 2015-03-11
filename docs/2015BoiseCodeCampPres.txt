@@ -1,0 +1,127 @@
+2015 Boise Code Camp
+
+Lessons learned while building a pair of arduino-based battle tanks
+
+
+What do they look like?
+<demo>
+
+
+Original goals:
+Tanks should identify who shot them and with what
+Selectable weapons do differing amounts of damage
+Multiple tank "shields"
+Extendable to many tanks (more than just 2)
+Eventually tanks communicate back to host computer?
+
+Lots of code...and the hardest code was code to *communicate*
+
+tank <--> controller (2.4ghz radios)
+tank1 <--> tank2 (IR beam)
+user <-- tank (I2C LCD display)
+tank1 <—-> tank1 (EasyTransfer serial)
+
+Tank logic was trivial…hardware layer integration was much more challenging
+
+
+---Code structure:
+
+beyond simple, trivial apps organization becomes more important
+Processing (arduino’s code) is based on C/C++
+Some gotchas here and there where full C++ OO isn’t…quite…all there
+Some things you think *should* work…just don’t. (quite)
+
+---Arduino OO 101 - Classes, variables, member functions
+
+Define a header
+note: all member functions (public or private) _must_ be in the header
+define your member variables in here too
+good to go with a convention: _myVariable is a local-to-the-class var
+(with a nice color coding IDE not such a big deal)
+
+---Oddities
+strange compiler/linker behavior with parameterized constructors containing custom objects
+[demo error -- Tank::Tank]
+solution: add weird line to init objects on constructor line
+-OR-
+add a parameterless constructor as well
+
+Processing passes by value...so for objects init'ed in main, pointers are your friends
+--refresher on pointer notation, dereferencing, etc
+
+Odd behavior when accessing an object which is a property of an object
+
+---Handy things to know/do
+If on windows, take a look at MS Visual Studio 2013 + VisualMicro!
+[demo]
+
+
+---How I did it
+[insert Young Frankenstein pic]
+https://flavorwire.files.wordpress.com/2012/06/howididit.jpg
+
+Game flow, controller:
+* read joystick, trigger
+* send controller update to tank
+* check for messages from tank (I wuz hit!)
+* update lcd
+
+
+
+Tank:
+* check for network messages (controller updates)
+* if firing, FIRE!
+* update motor controller
+* check if we were hit (EasyTransfer -> softserial from IRduino)
+* if hit, send msg to controller
+
+Tank
+	has-a: shield (includes front, back, left, right)
+	has-a: current weapon
+
+Shield
+	has-a: f
+	
+Weapon
+	has-a: shot
+
+
+
+
+---LIBRARIES USED---
+
+**IRremote
+infrared transmitter/receiver library for arduino
+http://www.righto.com/2009/08/multi-protocol-infrared-remote-library.html
+
+use _this_ fork if you're going to do multiple IR receivers...it's the only one I found
+to work reliably: https://github.com/skbrii/IRremote
+
+
+
+
+
+**RF24Network
+home: http://maniacbug.github.io/RF24Network/
+src: https://github.com/maniacbug/RF24Network
+using inexpensive nRF24L01(+) radios easily (cheap alternative to zigbee)
+cool tip: a tcp/ip stack (sorta) for these things is available: http://embeddedcoolness.com/home/
+
+
+
+**EasyTransfer -- Arduino to Arduino communication
+home: http://www.billporter.info/2011/05/30/easytransfer-arduino-library/
+src: https://github.com/madsci1016/Arduino-EasyTransfer
+I2C, software serial, virtualwire versions
+If using an I2C lcd, *that* arduino *has* to be the master...and there are oddities for
+who can send/receive between master and slave.  (so I used software serial)
+
+
+
+**I2C Lcd
+somewhat specific to the i2c chipset
+the super-cheap $1 I2C to LCD adapters I bought on ebay needed this particular advice:
+http://forum.arduino.cc/index.php?topic=157817.0
+
+
+ 
