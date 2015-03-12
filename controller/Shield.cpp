@@ -57,6 +57,9 @@ void Shield::regen()
 boolean Shield::recordHit(int side, int damage) 
 {
   boolean dead=false;
+  //all these if statements are supremely sub-optimal...but they
+  //do clearly demonstrate what's going on.
+  //that's my story and I'm sticking to it...
  /* switch (side) {
     case 0:
       _f -= damage;
