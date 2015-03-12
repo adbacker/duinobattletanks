@@ -15,7 +15,7 @@ Extendable to many tanks (more than just 2)
 Eventually tanks communicate back to host computer?
 
 Lots of code...and the hardest code was code to *communicate*
-
+  
 tank <--> controller (2.4ghz radios)
 tank1 <--> tank2 (IR beam)
 user <-- tank (I2C LCD display)
@@ -75,15 +75,112 @@ Tank:
 * check if we were hit (EasyTransfer -> softserial from IRduino)
 * if hit, send msg to controller
 
-Tank
-	has-a: shield (includes front, back, left, right)
-	has-a: current weapon
 
-Shield
-	has-a: f
-	
-Weapon
-	has-a: shot
+---Highlights, controller
+
+****LCD
+
+define:
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Set the pins on the I2C chip used for LCD connections:
+//                    addr, en,rw,rs,d4,d5,d6,d7,bl,blpol
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+
+
+setup:
+lcd.begin(20,2); // initialize the lcd for 20 chars 4 lines and turn on backlight
+
+
+writing:
+lcd.setCursor(0,0);
+lcd.print("This is a test");
+lcd.setCursor(0,1);
+lcd.print("this is only a test");
+
+
+Notes:
+use i2c scan app to discover lcd's i2c address (not always what is advertised)
+
+constant updating will cause flicker
+easy way to fix that, only update every 100 milliseconds:
+
+if (millis() % 100 == 0) {
+	lcd.setCursor(0,0);
+	lcd.print("msg goz here");
+}
+
+
+
+
+
+
+****RF24network
+
+define:
+
+#include <RF24Network.h>
+#include <RF24.h>
+#include <SPI.h>
+
+#define CE_PIN   9 //these can differ
+#define CSN_PIN 10 //I tested 7 and 8 and they worked
+RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
+// Network uses that radio
+RF24Network network(radio);
+// Address of our node
+const uint16_t this_node = 0;
+// Address of the other node
+const uint16_t other_node = 1;
+
+
+setup:
+SPI.begin();
+radio.begin();
+network.begin(/*channel*/ 90, /*node address*/ this_node);
+struct controller {
+	long encodedShot;
+	int xval;
+	int yval;
+}
+
+using:
+//put this in your main loop:
+network.update();     // Pump the network regularly
+
+--sending
+
+int controller[3];
+
+
+controller[0] = xval; //x throttle value
+controller[1] = yval; //y throttle value
+controller[2] = encodedShot; //0 if not firing, 
+//send our controller values
+RF24NetworkHeader header(/*to node*/ other_node);
+bool ok = network.write(header,&controller,sizeof(controller));
+//if (ok)
+//  Serial.println("ok.");
+//else
+//  Serial.println("failed.");
+
+--receiving
+  while ( network.available() )
+  {
+    // If so, grab it and print it out
+    RF24NetworkHeader header;
+    network.read(header,&controller,sizeof(controller));
+  }
+  long xval = controller[0];
+  int yval = controller[1];
+  
+  if (controller[0] !=0 || controller[1] !=0)
+  {
+    //throttlemix(controller[0],controller[1]);
+  }
+
+
 
 
 
@@ -96,8 +193,6 @@ http://www.righto.com/2009/08/multi-protocol-infrared-remote-library.html
 
 use _this_ fork if you're going to do multiple IR receivers...it's the only one I found
 to work reliably: https://github.com/skbrii/IRremote
-
-
 
 
 
@@ -122,6 +217,8 @@ who can send/receive between master and slave.  (so I used software serial)
 somewhat specific to the i2c chipset
 the super-cheap $1 I2C to LCD adapters I bought on ebay needed this particular advice:
 http://forum.arduino.cc/index.php?topic=157817.0
+which references this page:
+http://arduino-info.wikispaces.com/LCD-Blue-I2C
 
 
  

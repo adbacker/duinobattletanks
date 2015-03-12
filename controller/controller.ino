@@ -55,6 +55,13 @@ const uint16_t other_node = 1;
 /*-----( Declare Variables )-----*/
 
 long controller[3];  // 3 element array holding controller readings & fire state
+
+struct controller {
+  int x;
+  int y;
+  long encodedShot;
+}
+
 long hit[2]; //2 element array holding the encoded hit, and the side that was hit
 
 Tank tank(3,100,99); //init tank: id, ms energy recharge interval, max energy
