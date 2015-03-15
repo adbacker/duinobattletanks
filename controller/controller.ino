@@ -34,8 +34,13 @@
 #include "Tank.h"
 #include "Statuslcd.h"
 
-
 /*-----( Declare Constants and Pin Numbers )-----*/
+
+//#define DEBUG //debug - serial.start switch
+
+#define CONTROLLERA
+//#define CONTROLLERB
+
 #define CE_PIN   9
 #define CSN_PIN 10
 #define controller_X 0
@@ -49,17 +54,19 @@ RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 // Network uses that radio
 RF24Network network(radio);
 
+#ifdef CONTROLLERA
 //controller/tank set A
-//const uint16_t this_node = 00;
-//const uint16_t other_node = 02;
-//Tank tank(1,100,99); //init tank: id, ms energy recharge interval, max energy
+const uint16_t this_node = 00;
+const uint16_t other_node = 02;
+Tank tank(1,100,99); //init tank: id, ms energy recharge interval, max energy
+#endif
 
-
+#ifdef CONTROLLERB
 //tank/controller set B
 const uint16_t this_node = 01;
 const uint16_t other_node = 011;
 Tank tank(2,100,99); //init tank: id, ms energy recharge interval, max energy
-
+#endif
 
 
 /*-----( Declare Variables )-----*/
@@ -82,13 +89,14 @@ long firingValue=0L; //value to send for firing - 0 (not firing) or a weapon/pow
 boolean firing=false;
 boolean switchingweapons=false;
 
-
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
+  #ifdef DEBUG
+  Serial.begin(57600);
+  #endif
+  
   pinMode(trigger_pin,INPUT_PULLUP);
   pinMode(weapswitch_pin,INPUT_PULLUP);
-  
-  Serial.begin(57600);
   SPI.begin();
   radio.begin();
   network.begin(/*channel*/ 90, /*node address*/ this_node);
@@ -99,29 +107,26 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {  
   network.update();     // Pump the network regularly
-  if (! tank.isDead())
- {     
+  if (! tank.isDead()) {     
     handleFire(); 
     handleWeaponSwitch();
     handleControllerUpdate(); //send controller & firing values
     tank.regen();  //update tank energy
     tank.regenShield(); //this *does* work.  WTH?!
     check_network(); //check the network queue to see if we've received anything
-  }
+  } 
   statuslcd.update(tank,lcd); //update player status lcd  
-  debugController();
+  //debugController();
   //debugTank();
   //--(end main loop )---
-
 }
-/*-----( Declare User-written Functions )-----*/
 
+/*-----( Declare User-written Functions )-----*/
 
 void handleControllerUpdate()
 {
   //controller cmd structure: 0 & 1 == controller x & y, 2 == encoded fire cmd
   //Serial.println("handle controller update called");
-
   //read the controller x & y values
   controller[0] = long(analogRead(1));
   controller[1] = long(analogRead(0));
@@ -129,12 +134,8 @@ void handleControllerUpdate()
 
   //send our controller values
   RF24NetworkHeader header(/*to node*/ other_node);
-  bool ok = network.write(header,&controller,sizeof(controller));
-  //if (ok)
-  //  Serial.println("ok.");
-  //else
-  //  Serial.println("failed.");
-  debugController();
+  network.write(header,&controller,sizeof(controller));
+  //debugController();
 }
 
 
@@ -162,8 +163,6 @@ void handleFire()
 //handle all the cruft having to do with switching weapons
 void handleWeaponSwitch()
 {
-  //Serial.println("handle weapon switch called");
-
   //read the weapon switch 
   if (digitalRead(weapswitch_pin)==LOW) {
     //only switch if this is the first time through

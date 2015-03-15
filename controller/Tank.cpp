@@ -16,7 +16,7 @@ Tank::Tank(byte id,int recharge, int maxEnergy)// : _shield(0,0),_shot(B0,B0,B0)
   _maxEnergy = maxEnergy;
   _energy = maxEnergy;
 
-  _shield = Shield(99,1000L);   //initialize the shield.  hardcoded to recover @ 1 unit/sec
+  _shield = Shield(99,2000L);   //initialize the shield.  recharge @ 1 unit/every 2 sec
 
   //load yer weapons!
   _weap1 = Weapon(byte(0), "Pulse",'P',20,10);

@@ -60,16 +60,7 @@ boolean Shield::recordHit(int side, int damage)
   //all these if statements are supremely sub-optimal...but they
   //do clearly demonstrate what's going on.
   //that's my story and I'm sticking to it...
- /* switch (side) {
-    case 0:
-      _f -= damage;
-      break;
-    case 1:
-      _b -= damage;
-      break;
-    case default:
-      break;
-  }*/
+
   if (side == 0) 
   {
     _f = _f - damage;

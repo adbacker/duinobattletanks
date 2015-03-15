@@ -19,10 +19,11 @@
    Based on examples at http://www.bajdi.com/
    Questions: terry@yourduino.com */
 
-//WHICH TANK?
+//#define DEBUG
 
-//#define TANKA
-#define TANKB
+//WHICH TANK?
+#define TANKA
+//#define TANKB
 
 
 /*-----( Import needed libraries )-----*/
@@ -65,23 +66,15 @@ RECEIVE_DATA_STRUCTURE myReceiveData;
 #define IN4 19
 
 
-//joystick tweaking values
-
-
-
 //tank A
 #ifdef TANKA
-
 #define TANK_ID 1
-
 const uint16_t this_node = 02;
 const uint16_t other_node = 00;
-
 #define YAXIS_CENTER 560
 #define XAXIS_CENTER 500
 #define YAXIS_DEADZONE 40
 #define XAXIS_DEADZONE 40
-
 #define LEFT -1
 #define RIGHT 1
 
@@ -90,35 +83,26 @@ const uint16_t other_node = 00;
  //get PWM whine
 #define MIN_MOTOR_SPEED 60
 #define MAX_TURN_SPEED 180 //maximum speed at which to turn. ie: max turn speed when stopped
-
 #endif
 
 
 //tank B
 #ifdef TANKB
-
 #define TANK_ID 2
-
 const uint16_t this_node = 011;
 const uint16_t other_node = 01;
-
 #define LEFT 1
 #define RIGHT -1
 #define YAXIS_CENTER 476
 #define XAXIS_CENTER 558
 #define YAXIS_DEADZONE 40
 #define XAXIS_DEADZONE 40
-
  //PWM value at which point he motor actually starts to move
  //so don't bother to try and set the speed lower..you'll just
  //get PWM whine
 #define MIN_MOTOR_SPEED 40
 #define MAX_TURN_SPEED 130 //maximum speed at which to turn. ie: max turn speed when stopped
-
-
 #endif
-
-
 
 
 int xmin,xmax,ymin,ymax;
@@ -172,10 +156,10 @@ bool justHit=false;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
-
+  #ifdef DEBUG
   Serial.begin(57600);
+  #endif
   delay(1000);
-  
   // MOTOR CONTROLLER setup BEGIN
   //pinMode(ENA, OUTPUT);
   //pinMode(ENB, OUTPUT);
@@ -350,10 +334,6 @@ void throttlemix(int xval, int yval) {
   Serial.print("\tturndir:\t");
   Serial.print(turndir);
 
-  //if A, left = -1
-  //if B, left = 1
-  
-  
   //apply calculated "turn magnitude" changes to the left and right motor magnitudes
   if (turndir == LEFT) { //if turning left 
     lmotor = lmotor - scaledTurnMagnitude; //the left wheel goes slower
