@@ -19,6 +19,12 @@
    Based on examples at http://www.bajdi.com/
    Questions: terry@yourduino.com */
 
+//WHICH TANK?
+
+//#define TANKA
+#define TANKB
+
+
 /*-----( Import needed libraries )-----*/
 #include <RF24Network.h>
 #include <RF24.h>
@@ -27,6 +33,7 @@
 //#include <Wire.h>
 #include <SoftwareSerial.h>
 #include <SoftEasyTransfer.h>
+#include "Shot.h"
 
 SoftEasyTransfer ET;
 SoftwareSerial mySerial(7, 8);
@@ -59,16 +66,60 @@ RECEIVE_DATA_STRUCTURE myReceiveData;
 
 
 //joystick tweaking values
-#define YAXIS_DEADZONE 40
-#define XAXIS_DEADZONE 40
+
+
+
+//tank A
+#ifdef TANKA
+
+#define TANK_ID 1
+
+const uint16_t this_node = 02;
+const uint16_t other_node = 00;
+
 #define YAXIS_CENTER 560
 #define XAXIS_CENTER 500
+#define YAXIS_DEADZONE 40
+#define XAXIS_DEADZONE 40
+
+#define LEFT -1
+#define RIGHT 1
 
  //PWM value at which point he motor actually starts to move
  //so don't bother to try and set the speed lower..you'll just
  //get PWM whine
 #define MIN_MOTOR_SPEED 60
 #define MAX_TURN_SPEED 180 //maximum speed at which to turn. ie: max turn speed when stopped
+
+#endif
+
+
+//tank B
+#ifdef TANKB
+
+#define TANK_ID 2
+
+const uint16_t this_node = 011;
+const uint16_t other_node = 01;
+
+#define LEFT 1
+#define RIGHT -1
+#define YAXIS_CENTER 476
+#define XAXIS_CENTER 558
+#define YAXIS_DEADZONE 40
+#define XAXIS_DEADZONE 40
+
+ //PWM value at which point he motor actually starts to move
+ //so don't bother to try and set the speed lower..you'll just
+ //get PWM whine
+#define MIN_MOTOR_SPEED 40
+#define MAX_TURN_SPEED 130 //maximum speed at which to turn. ie: max turn speed when stopped
+
+
+#endif
+
+
+
 
 int xmin,xmax,ymin,ymax;
 
@@ -104,10 +155,6 @@ unsigned long _lastHitTime = 0L;
 
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 RF24Network network(radio);
-// Address of our node
-const uint16_t this_node = 1;
-// Address of the other node
-const uint16_t other_node = 0;
 
 unsigned long lastShootingValue; //very last controller trigger value
 unsigned long g_encoded; //global...don't ask why.  just...don't.
@@ -195,6 +242,8 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     Serial.print("pew pew!");
     Serial.println(g_encoded);
     irsend.sendSony(g_encoded,32);
+    reverse(250,15);
+    allMotorStop(); 
   } 
   //check to see if we've been hit
   pollReceivers();
@@ -210,14 +259,17 @@ void receive(int numBytes) {}
 
 void registerHit(long encodedshot, int side)
 {
-  //check to see if it's been more than 100ms since the last hit
-  //if so, reject it out of hand
-  unsigned long now = millis();
-  unsigned long timeSinceLastHit = now - _lastHitTime;
-  if (timeSinceLastHit >200)
-  {
-    //if (encodedshot > 0L && encodedshot < 4096L)
-    //{
+  //first, make sure it's not us shooting ourselves..
+  Shot shot = Shot(encodedshot);
+  
+  //only register the hit if we didn't initiate the shot
+  if (shot.getPlayerId() != TANK_ID) {  
+    //check to see if it's been more than 200ms since the last hit
+    //if so, reject it out of hand
+    unsigned long now = millis();
+    unsigned long timeSinceLastHit = now - _lastHitTime;
+    if (timeSinceLastHit >200)
+    {
       _lastHitTime = now;
       Serial.print("dumping...just shot with:");
       Serial.print(encodedshot);
@@ -227,7 +279,13 @@ void registerHit(long encodedshot, int side)
       hit[1]=side;
       RF24NetworkHeader header(other_node);
       bool ok = network.write(header,&hit,sizeof(hit));
-    //}
+      for (int i=0;i<10;i++) {
+        reverse(250,25);
+        allMotorStop();
+        forward(250,25);
+        allMotorStop();
+      }
+    }
   }
 }
 
@@ -252,10 +310,10 @@ void throttlemix(int xval, int yval) {
   //first, figure out how fast we're going forwards or back
   int ymix=0;
   if (yval < ymin) { //if < 500, we're goin backwards
-    ymix = map(yval,550,50,-MIN_MOTOR_SPEED,-255); // 0 to -255 for reverse
+    ymix = map(yval,YAXIS_CENTER-10,50,-MIN_MOTOR_SPEED,-255); // 0 to -255 for reverse
   }
   else if (yval > ymax) {
-    ymix = map(yval,570,1023,MIN_MOTOR_SPEED,255);
+    ymix = map(yval,YAXIS_CENTER+10,1023,MIN_MOTOR_SPEED,255);
   }
   Serial.print("\tymix:\t");
   Serial.print(ymix);
@@ -273,12 +331,12 @@ void throttlemix(int xval, int yval) {
   int turndir=0; //1 = left, 0 = right
   if (xval < xmin) {
     //turning left
-    turnmagnitude = map(xval,490,50,0,MAX_TURN_SPEED);
+    turnmagnitude = map(xval,XAXIS_CENTER-10,50,0,MAX_TURN_SPEED);
     turndir = -1;
   }
   else if (xval > xmax) {
     //turning right
-    turnmagnitude = map(xval,520,1023,0,MAX_TURN_SPEED);
+    turnmagnitude = map(xval,XAXIS_CENTER+10,1023,0,MAX_TURN_SPEED);
     turndir = 1;
   }
   
@@ -292,12 +350,15 @@ void throttlemix(int xval, int yval) {
   Serial.print("\tturndir:\t");
   Serial.print(turndir);
 
+  //if A, left = -1
+  //if B, left = 1
+  
   
   //apply calculated "turn magnitude" changes to the left and right motor magnitudes
-  if (turndir == 1) { //if turning left
+  if (turndir == LEFT) { //if turning left 
     lmotor = lmotor - scaledTurnMagnitude; //the left wheel goes slower
     rmotor = rmotor + scaledTurnMagnitude; //the right wheel goes faster
-  } else if (turndir == -1) { //turning to the right
+  } else if (turndir == RIGHT) { //turning to the right
     lmotor = lmotor + scaledTurnMagnitude; //left wheel goes faster
     rmotor = rmotor - scaledTurnMagnitude; //right wheel goes slower
   }
@@ -340,6 +401,27 @@ void throttlemix(int xval, int yval) {
   analogWrite(ENB,abs(rmotor)); //finally, set the speed for the right motor
 }
 
+//used when shaking tank on hit
+void reverse(int howfast, int msdelay) {
+  digitalWrite(IN1,LOW); //motora, reverse
+  digitalWrite(IN2,HIGH); //motora, reverse 
+  digitalWrite(IN3,HIGH); //motorb, reverse
+  digitalWrite(IN4,LOW); //motorb, reverse 
+  analogWrite(ENA,howfast);
+  analogWrite(ENB,howfast);
+  delay(msdelay);
+}
+
+void forward(int howfast, int msdelay) {
+  digitalWrite(IN1,HIGH); //motorb fwd
+  digitalWrite(IN2,LOW); //motorb fwd
+  digitalWrite(IN3,LOW); //motorb fwd
+  digitalWrite(IN4,HIGH); //motorb fwd
+  analogWrite(ENA,howfast);
+  analogWrite(ENB,howfast);
+  delay(msdelay);
+}
+
 void allMotorStop()
 {
   digitalWrite(IN1,LOW); //motorb fwd
@@ -359,7 +441,7 @@ void check_network() {
   }
   if (controller[0] !=0 || controller[1] !=0)
   {
-    //throttlemix(controller[0],controller[1]);
+    throttlemix(controller[0],controller[1]);
   }
   /*if (controller[2] !=0)
   {

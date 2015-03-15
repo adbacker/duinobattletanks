@@ -48,23 +48,32 @@
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 // Network uses that radio
 RF24Network network(radio);
-// Address of our node
-const uint16_t this_node = 0;
-// Address of the other node
-const uint16_t other_node = 1;
+
+//controller/tank set A
+//const uint16_t this_node = 00;
+//const uint16_t other_node = 02;
+//Tank tank(1,100,99); //init tank: id, ms energy recharge interval, max energy
+
+
+//tank/controller set B
+const uint16_t this_node = 01;
+const uint16_t other_node = 011;
+Tank tank(2,100,99); //init tank: id, ms energy recharge interval, max energy
+
+
+
 /*-----( Declare Variables )-----*/
 
 long controller[3];  // 3 element array holding controller readings & fire state
 
+/*
 struct controller {
   int x;
   int y;
   long encodedShot;
-}
+}*/
 
 long hit[2]; //2 element array holding the encoded hit, and the side that was hit
-
-Tank tank(3,100,99); //init tank: id, ms energy recharge interval, max energy
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 Statuslcd statuslcd;

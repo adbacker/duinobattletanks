@@ -104,8 +104,13 @@ void Tank::registerHit(long encoded, int side)
   //multiply power by 10 because it was divided by 10 on the 
   //shooting side.  recordHit returns TRUE if it's a killing shot eg:
   //takes the shield power to < 0
+  
+  //and only record a hit if it's *NOT* this tank...as the IR seems to be happy
+  //to self-tag ...
+  if (shotReceived.getPlayerId() != getId()) {
   boolean killHit = _shield.recordHit(side,int(shotReceived.getPower()*10));
   _isDead = killHit;
+  }
 }
 
 //regenerate tank weapon energy

@@ -89,7 +89,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   shield_left.enableIRIn(); // Start the receiver
   shield_right.enableIRIn(); // Start the receiver
   // IR setup END
-  //Serial.begin(57600);
+  Serial.begin(57600);
 
    Serial.println("starting mySerial..");
    mySerial.begin(9600);
@@ -165,7 +165,7 @@ void pollReceivers()
   if (shield_left.decode(&left_results)) {
     if (left_results.decode_type == SONY) { //if we can't decode the type, it's not a good packet...
       long encoded = left_results.value;
-      registerHit(left_results.value,2);
+      registerHit(encoded,2);
     }
     shield_left.resume(); // Receive the next value
   }
