@@ -137,8 +137,13 @@ const uint16_t other_node = 1;
 
 A NOTE ON NODES...
 node 00 is root
-nodes 01 - 05
+nodes 01 - 05 are children
+node 012 is the first child of node 02
+node 0312 is the third child of node 012
 
+a node, coming up, will need to find it's parent
+so address appropriately!
+(eg: someone will need to have node 00 as it's parent)
 
 
 setup:
@@ -170,6 +175,7 @@ bool ok = network.write(header,&controller,sizeof(controller));
 //  Serial.println("ok.");
 //else
 //  Serial.println("failed.");
+
 
 --receiving
   while ( network.available() )
