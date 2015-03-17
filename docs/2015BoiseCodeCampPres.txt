@@ -135,6 +135,12 @@ const uint16_t this_node = 0;
 const uint16_t other_node = 1;
 
 
+A NOTE ON NODES...
+node 00 is root
+nodes 01 - 05
+
+
+
 setup:
 SPI.begin();
 radio.begin();

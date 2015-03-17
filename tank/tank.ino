@@ -19,8 +19,6 @@
    Based on examples at http://www.bajdi.com/
    Questions: terry@yourduino.com */
 
-//#define DEBUG
-
 //WHICH TANK?
 #define TANKA
 //#define TANKB
@@ -156,9 +154,7 @@ bool justHit=false;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
-  #ifdef DEBUG
   Serial.begin(57600);
-  #endif
   delay(1000);
   // MOTOR CONTROLLER setup BEGIN
   //pinMode(ENA, OUTPUT);

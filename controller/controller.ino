@@ -36,10 +36,8 @@
 
 /*-----( Declare Constants and Pin Numbers )-----*/
 
-//#define DEBUG //debug - serial.start switch
-
-#define CONTROLLERA
-//#define CONTROLLERB
+//#define CONTROLLERA
+#define CONTROLLERB
 
 #define CE_PIN   9
 #define CSN_PIN 10
@@ -88,15 +86,13 @@ Statuslcd statuslcd;
 long firingValue=0L; //value to send for firing - 0 (not firing) or a weapon/power/player encoded long
 boolean firing=false;
 boolean switchingweapons=false;
+boolean recompile = true;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
-  #ifdef DEBUG
-  Serial.begin(57600);
-  #endif
-  
   pinMode(trigger_pin,INPUT_PULLUP);
   pinMode(weapswitch_pin,INPUT_PULLUP);
+  Serial.begin(57600);
   SPI.begin();
   radio.begin();
   network.begin(/*channel*/ 90, /*node address*/ this_node);
@@ -116,7 +112,7 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     check_network(); //check the network queue to see if we've received anything
   } 
   statuslcd.update(tank,lcd); //update player status lcd  
-  //debugController();
+  debugController();
   //debugTank();
   //--(end main loop )---
 }
