@@ -1,27 +1,60 @@
 2015 Boise Code Camp
 
+intro (me!)
+
+
 Lessons learned while building a pair of arduino-based battle tanks
 
 
+
 What do they look like?
-<demo>
+<demo video...or live presentation>
+
+
+(5)
 
 
 Original goals:
+
 Tanks should identify who shot them and with what
 Selectable weapons do differing amounts of damage
 Multiple tank "shields"
 Extendable to many tanks (more than just 2)
-Eventually tanks communicate back to host computer?
+
+
+Eventually...
+tanks communicate back to host computer
+tanks with different balanced abilities
+  more shields but slower
+  different energy recharge rates
+load tank configs by SD card
+rumble feedback
+sound effects
+LASERS!  (because everything's better with lasers...)
+
+
+
+
+
+
+
 
 Lots of code...and the hardest code was code to *communicate*
   
+
 tank <--> controller (2.4ghz radios)
 tank1 <--> tank2 (IR beam)
 user <-- tank (I2C LCD display)
 tank1 <—-> tank1 (EasyTransfer serial)
 
+
 Tank logic was trivial…hardware layer integration was much more challenging
+
+
+
+
+
+
 
 
 ---Code structure:
@@ -31,6 +64,12 @@ Processing (arduino’s code) is based on C/C++
 Some gotchas here and there where full C++ OO isn’t…quite…all there
 Some things you think *should* work…just don’t. (quite)
 
+
+
+
+
+
+
 ---Arduino OO 101 - Classes, variables, member functions
 
 Define a header
@@ -39,21 +78,46 @@ define your member variables in here too
 good to go with a convention: _myVariable is a local-to-the-class var
 (with a nice color coding IDE not such a big deal)
 
+
 ---Oddities
 strange compiler/linker behavior with parameterized constructors containing custom objects
 [demo error -- Tank::Tank]
 solution: add weird line to init objects on constructor line
 -OR-
-add a parameterless constructor as well
+add a parameterless constructor (even if you don't use it)
+
 
 Processing passes by value...so for objects init'ed in main, pointers are your friends
---refresher on pointer notation, dereferencing, etc
+
+
+--super quick refresher on pointer notation, dereferencing, etc
+
+int a;  //a contains an integer value..
+int* b; //b contains a _pointer_ (an address in memory) to an integer type
+
+b = &a;  // &a says "give me the pointer to this variable"
+         // not the var itself, but it's address in memory
+         // so now b contains a's "address"
+         // this is called "dereferencing a variable"  
+         // dereference == 'get me the damn address of'
+
+int c = *b; // *b means "show me what the pointer b is pointing _at_"
+            //so c now contains whatever b was pointing at...
+
 
 Odd behavior when accessing an object which is a property of an object
 
 ---Handy things to know/do
+
+Syntax highlighting for larger projects is *very* nice...
+
 If on windows, take a look at MS Visual Studio 2013 + VisualMicro!
 [demo]
+
+On mac, Sublime text with the arduino plugin works well
+
+
+
 
 
 ---How I did it
@@ -88,10 +152,8 @@ define:
 //                    addr, en,rw,rs,d4,d5,d6,d7,bl,blpol
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
-
 setup:
 lcd.begin(20,2); // initialize the lcd for 20 chars 4 lines and turn on backlight
-
 
 writing:
 lcd.setCursor(0,0);
@@ -101,18 +163,20 @@ lcd.print("this is only a test");
 
 
 Notes:
+remove existing lcd libraries from arduino! (else weird errors)
+
 use i2c scan app to discover lcd's i2c address (not always what is advertised)
+http://gammon.com.au/i2c 
 
 constant updating will cause flicker
 easy way to fix that, only update every 100 milliseconds:
 
 if (millis() % 100 == 0) {
 	lcd.setCursor(0,0);
-	lcd.print("msg goz here");
+	lcd.print("msg line 1 goz here");
+  lcd.setCursor(0,1);
+  lcd.print("msg line 2 goz here");
 }
-
-
-
 
 
 
@@ -171,10 +235,10 @@ controller[2] = encodedShot; //0 if not firing,
 //send our controller values
 RF24NetworkHeader header(/*to node*/ other_node);
 bool ok = network.write(header,&controller,sizeof(controller));
-//if (ok)
-//  Serial.println("ok.");
-//else
-//  Serial.println("failed.");
+if (ok)
+  Serial.println("ok.");
+else
+  Serial.println("failed.");
 
 
 --receiving
@@ -193,6 +257,9 @@ bool ok = network.write(header,&controller,sizeof(controller));
   }
 
 
+
+--MISC:
+POWER!  with one usb plugged in and 2 arduinos connected, one will sponge off another, not enough power to run everything (example: ir ports not working...)
 
 
 
@@ -231,6 +298,17 @@ the super-cheap $1 I2C to LCD adapters I bought on ebay needed this particular a
 http://forum.arduino.cc/index.php?topic=157817.0
 which references this page:
 http://arduino-info.wikispaces.com/LCD-Blue-I2C
+
+
+
+--TOOLS USED--
+Visual Studio Community Edition: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
+Visual Micro (plugin for ^^) http://www.visualmicro.com/
+
+On mac:
+Xcode (free, app store!) with embedXcode http://playground.arduino.cc/Main/EmbedXcode
+Sublime Text ( http://www.sublimetext.com/ ) with Stino arduino plugin ( https://github.com/Robot-Will/Stino )
+
 
 
  

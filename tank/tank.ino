@@ -23,7 +23,6 @@
 #define TANKA
 //#define TANKB
 
-
 /*-----( Import needed libraries )-----*/
 #include <RF24Network.h>
 #include <RF24.h>
@@ -180,12 +179,13 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   ymax = YAXIS_CENTER+YAXIS_DEADZONE;
   
   
-  Serial.println("Nrf24L01 Receiver Starting");
   // radio setup BEGIN
+  Serial.println("Nrf24L01 Receiver Starting");
   SPI.begin();
   radio.begin();
   network.begin(/*channel*/ 90, /*node address*/ this_node);
   
+  //init controller array
   controller[0]=0;
   controller[1]=0;
   controller[2]=0;

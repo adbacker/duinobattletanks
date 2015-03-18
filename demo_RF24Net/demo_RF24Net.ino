@@ -44,12 +44,14 @@ RF24Network network(radio);
 // RADIO assignments END
 /////////////////////////////////////////
 
+byte incomingByte=0; //necessary for serial read
 
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
   Serial.begin(57600);
-  
+  printf_begin();
+  randomSeed(analogRead(0));
   Serial.println("Nrf24L01 Receiver Starting");
   // radio setup BEGIN
   SPI.begin();
@@ -68,9 +70,11 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   check_network();  //check for network updates
   
   if (Serial.available() > 0) { //if someone hits a key..
+    incomingByte = Serial.read(); //gotta do this, else the byte stays in the buffer
+
     myNetData.controller_x = random(1024);
     myNetData.controller_y = random(1024);
-    printf("sending xval: %i, yval: %i to %i",myNetData.controller_x, myNetData.controller_y, other_node);
+    printf("sending xval: %i, yval: %i to node %i \n",myNetData.controller_x, myNetData.controller_y, other_node);
     RF24NetworkHeader header(other_node);
     bool ok = network.write(header,&myNetData,sizeof(myNetData));
     if (ok) {
@@ -92,7 +96,7 @@ void check_network() {
     // If so, grab it and print it out
     RF24NetworkHeader header;
     network.read(header,&myNetData,sizeof(myNetData));
-    printf("Received xval: %i, yval: %i from %i",myNetData.controller_x, myNetData.controller_y, other_node);
+    printf("Received xval: %i, yval: %i from %i\n",myNetData.controller_x, myNetData.controller_y, other_node);
   }
 }
 
