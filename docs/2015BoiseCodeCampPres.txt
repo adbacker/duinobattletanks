@@ -1,3 +1,34 @@
+Still to do...
+basic video for intro
+--music: flight of the valkyries--
+
+=> tank zooming, left to right
+right to left
+spins in place
+POV over "shoulder", shoots & kicks back, pause, shoots again
+side view, hit & shakes
+split screen:
+top: side view, shoots 3x, inset of joystick + lcd showing energy depletion
+bottom: side view, gets hit 3x, inset of lcd showing tank taking damage
+close up of thumb switching to big weapon
+shot of tank turning tail and running (top-ish)
+shot of another tank "persuing"
+vertical split screen
+left: tank1 shoots, right: top, tank2 dies-bottom, tank2 controller shows "you have died"
+
+
+
+
+review presentation, time it
+
+
+
+
+
+
+
+
+
 2015 Boise Code Camp
 
 intro (me!)
@@ -76,24 +107,6 @@ LASERS!  (because everything's better with lasers...)
 
 
 
----How I did it
-https://flavorwire.files.wordpress.com/2012/06/howididit.jpg
-
-
-Game flow, controller:
-* read joystick, trigger
-* send controller update to tank
-* check for messages from tank (I wuz hit!)
-* update lcd
-
-
-Tank:
-* check for network messages (controller updates)
-* if firing, FIRE!
-* update motor controller
-* IRduino checks if we were hit (EasyTransfer -> softserial)
-* if hit, send msg to controller
-
 
 
 
@@ -118,7 +131,17 @@ Tank logic was trivial…hardware layer integration was much more challenging
 beyond simple, trivial apps organization becomes more important
 Processing (arduino’s code) is based on C/C++
 Some gotchas here and there where full C++ OO isn’t…quite…all there
+
 Some things you think *should* work…just don’t. (quite)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -154,24 +177,6 @@ add a parameterless constructor (even if you don't use it)
 Processing passes by value...so for objects init'ed in main, pointers are your friends
 
 
-
-
-
---super quick refresher on pointer notation, dereferencing, etc (SKIP ME!)
-
-int a;  //a contains an integer value..
-int* b; //b contains a _pointer_ (an address in memory) to an integer type
-
-b = &a;  // &a says "give me the pointer to this variable"
-         // not the var itself, but it's address in memory
-         // so now b contains a's "address"
-         // this is called "dereferencing a variable"  
-         // dereference == 'get me the damn address of'
-
-int c = *b; // *b means "show me what the pointer b is pointing _at_"
-            //so c now contains whatever b was pointing at...
-
-
 Odd behavior when accessing an object which is a property of an object
 
 
@@ -198,8 +203,22 @@ On mac, Sublime text with the arduino plugin works well
 
 
 
+
+
+
+
+
+
+
+
+
+
 ---MAKING THINGS MOVE
 [motor control demo]
+
+*** flip values for forward/reverse if they're not working
+*** feedback loop (optical encoders) would have made steering easier, 
+    code more complex
 
 
 
@@ -212,6 +231,16 @@ On mac, Sublime text with the arduino plugin works well
 [RF24Network demo]
 
 
+
+A NOTE ON NODES...
+node 00 is root
+nodes 01 - 05 are children
+node 012 is the first child of node 02
+node 0312 is the third child of node 012
+
+a node, coming up, will need to find it's parent
+so address appropriately!
+(eg: someone will need to have node 00 as it's parent)
 
 
 
@@ -305,15 +334,6 @@ const uint16_t this_node = 0;
 const uint16_t other_node = 1;
 
 
-A NOTE ON NODES...
-node 00 is root
-nodes 01 - 05 are children
-node 012 is the first child of node 02
-node 0312 is the third child of node 012
-
-a node, coming up, will need to find it's parent
-so address appropriately!
-(eg: someone will need to have node 00 as it's parent)
 
 
 setup:

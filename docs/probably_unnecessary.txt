@@ -1,0 +1,45 @@
+
+
+---How I did it
+https://flavorwire.files.wordpress.com/2012/06/howididit.jpg
+
+
+Game flow, controller:
+* read joystick, trigger
+* send controller update to tank
+* check for messages from tank (I wuz hit!)
+* update lcd
+
+
+Tank:
+* check for network messages (controller updates)
+* if firing, FIRE!
+* update motor controller
+* IRduino checks if we were hit (EasyTransfer -> softserial)
+* if hit, send msg to controller
+
+
+
+
+
+
+
+
+
+--super quick refresher on pointer notation, dereferencing, etc (SKIP ME!)
+
+int a;  //a contains an integer value..
+int* b; //b contains a _pointer_ (an address in memory) to an integer type
+
+b = &a;  // &a says "give me the pointer to this variable"
+         // not the var itself, but it's address in memory
+         // so now b contains a's "address"
+         // this is called "dereferencing a variable"  
+         // dereference == 'get me the damn address of'
+
+int c = *b; // *b means "show me what the pointer b is pointing _at_"
+            //so c now contains whatever b was pointing at...
+
+
+
+
