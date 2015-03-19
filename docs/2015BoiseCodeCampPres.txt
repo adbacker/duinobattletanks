@@ -11,7 +11,40 @@ What do they look like?
 <demo video...or live presentation>
 
 
-(5)
+
+
+
+
+
+
+
+
+What we'll cover here...
+
+
+Making large(ish) arduino projects manageable
+==> alternate ide
+==> existing IDE use
+==> OO with arduino
+Little bit about game flow/how I solved it
+
+CODE! Making the tanks *go*.  (basic motor control)
+CODE! Controlling the tank with the nrf24L01+ radios
+CODE! Encoding values & transmitting/receiving Infrared signals
+CODE! Transferring data arduino to arduino with the EasyTransfer serial library
+CODE! Displaying data out to the user with (cheap!) I2C lcd displays
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Original goals:
@@ -39,6 +72,39 @@ LASERS!  (because everything's better with lasers...)
 
 
 
+
+
+
+
+---How I did it
+https://flavorwire.files.wordpress.com/2012/06/howididit.jpg
+
+
+Game flow, controller:
+* read joystick, trigger
+* send controller update to tank
+* check for messages from tank (I wuz hit!)
+* update lcd
+
+
+Tank:
+* check for network messages (controller updates)
+* if firing, FIRE!
+* update motor controller
+* IRduino checks if we were hit (EasyTransfer -> softserial)
+* if hit, send msg to controller
+
+
+
+
+
+
+
+
+
+
+
+
 Lots of code...and the hardest code was code to *communicate*
   
 
@@ -49,20 +115,18 @@ tank1 <—-> tank1 (EasyTransfer serial)
 
 
 Tank logic was trivial…hardware layer integration was much more challenging
-
-
-
-
-
-
-
-
----Code structure:
-
 beyond simple, trivial apps organization becomes more important
 Processing (arduino’s code) is based on C/C++
 Some gotchas here and there where full C++ OO isn’t…quite…all there
 Some things you think *should* work…just don’t. (quite)
+
+
+
+
+
+
+
+
 
 
 
@@ -79,6 +143,7 @@ good to go with a convention: _myVariable is a local-to-the-class var
 (with a nice color coding IDE not such a big deal)
 
 
+
 ---Oddities
 strange compiler/linker behavior with parameterized constructors containing custom objects
 [demo error -- Tank::Tank]
@@ -86,11 +151,13 @@ solution: add weird line to init objects on constructor line
 -OR-
 add a parameterless constructor (even if you don't use it)
 
-
 Processing passes by value...so for objects init'ed in main, pointers are your friends
 
 
---super quick refresher on pointer notation, dereferencing, etc
+
+
+
+--super quick refresher on pointer notation, dereferencing, etc (SKIP ME!)
 
 int a;  //a contains an integer value..
 int* b; //b contains a _pointer_ (an address in memory) to an integer type
@@ -107,6 +174,18 @@ int c = *b; // *b means "show me what the pointer b is pointing _at_"
 
 Odd behavior when accessing an object which is a property of an object
 
+
+
+
+
+
+
+
+
+
+
+
+
 ---Handy things to know/do
 
 Syntax highlighting for larger projects is *very* nice...
@@ -119,25 +198,52 @@ On mac, Sublime text with the arduino plugin works well
 
 
 
-
----How I did it
-[insert Young Frankenstein pic]
-https://flavorwire.files.wordpress.com/2012/06/howididit.jpg
-
-Game flow, controller:
-* read joystick, trigger
-* send controller update to tank
-* check for messages from tank (I wuz hit!)
-* update lcd
+---MAKING THINGS MOVE
+[motor control demo]
 
 
 
-Tank:
-* check for network messages (controller updates)
-* if firing, FIRE!
-* update motor controller
-* check if we were hit (EasyTransfer -> softserial from IRduino)
-* if hit, send msg to controller
+
+
+
+
+
+---CONTROLLING STUFF 
+[RF24Network demo]
+
+
+
+
+
+
+
+
+---SHOOTING STUFF
+[IR demo]
+
+
+
+
+
+
+
+---TALK AMONGST YOURSELVES
+[EasyTransfer demo]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ---Highlights, controller
@@ -301,13 +407,76 @@ http://arduino-info.wikispaces.com/LCD-Blue-I2C
 
 
 
---TOOLS USED--
+--SOFTWARE TOOLS--
 Visual Studio Community Edition: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
 Visual Micro (plugin for ^^) http://www.visualmicro.com/
 
 On mac:
 Xcode (free, app store!) with embedXcode http://playground.arduino.cc/Main/EmbedXcode
 Sublime Text ( http://www.sublimetext.com/ ) with Stino arduino plugin ( https://github.com/Robot-Will/Stino )
+
+
+--PARTS--
+arduino uno clones:
+--note about USB chipsets..
+for windows, linux, and mac, you'll need to find and install the CH340G USB Driver for these to work.
+easiest way...go here:
+https://github.com/bgaultier/laboite-webapp
+download the archive as a .zip
+use ch341ser_mac.zip for mac, CH341SER.EXE for windows
+
+ebay: search "arduino uno"
+amazon:
+
+
+arduino nano clones:
+--see note above re: usb chipsets
+ebay: search "arduino nano"
+
+
+arduino pro minis:
+ebay: search "arduino pro mini"
+--notes:
+you'll need a usb-to-serial converter (below)
+watch out..some are 5v, some are 3.3v, and some can do either.
+
+
+usb-to-serial converter:
+ebay:
+amazon($5): http://www.amazon.com/gp/product/B009T2ZR6W/ref=oh_aui_detailpage_o01_s00?ie=UTF8&psc=1
+--will need drivers for CP2102 chipset!
+adafruit($17): http://www.adafruit.com/product/70
+
+
+LCDs:
+ebay(from $2): search for "LCD 1602 16x2"
+
+I2C backpack for LCD:
+ebay (from $1): search "LCD I2C" *THEN* select buy it now and sort by price+shipping, lowest first.  Should be some for < $1 with shipping...
+
+
+nRF24L01 radios
+ebay & amazon: search "nrf24l01"
+
+robot chassis
+amazon: search "robot chassis"
+"better" tank chassis ~ possibly one of these:http://www.tamiyausa.com/items/geniuseries-educational-kits-50/educational-construction-38000/tracked-vehicle-chassis-kit-70108
+paired with their dual motor: http://www.tamiyausa.com/items/geniuseries-educational-kits-50/educational-construction-38000/double-gearbox-70168
+
+L298D motor controllers
+ebay & amazon: search "L298 motor controller"
+
+IR Leds:
+ebay: search "IR LED 940"
+amazon:
+tayda electronics($0.06ea): http://www.taydaelectronics.com/infrared-led-940nm-5mm-tsal7400.html
+
+
+IR Receivers:
+ebay: search "IR receiver" in Business and Industrial
+amazon:
+tayda electronics($0.66ea): http://www.taydaelectronics.com/ir-receiver-module-38-khz-tsop4838.html
+
 
 
 

@@ -22,9 +22,9 @@ int totalcount=0;
 
 void setup() {
 	Serial.begin(57600);
-        printf_begin();
-        //randomSeed(analogRead(0));
-        Serial.println("starting IR ...");
+  printf_begin();
+  randomSeed(analogRead(0));
+  Serial.println("starting IR ...");
 	irreceiv.enableIRIn();  //start the IR receiver
 }
 
@@ -34,35 +34,27 @@ void loop() {  //BEGIN main loop
 //          printf("up %i seconds\n",millis()/1000);
 //        }
   if (irreceiv.decode(&results)) {
-    //irSentValue=results.value;
-    //Serial.println(results.value);
-    //printf("results.value: %i,",results.value);
-    /*if (results.decode_type == SONY) {
-      printf("decode type == SONY\n");
-    }
-    else {
-      printf("decode type == UNKNOWN\n");
-    }*/
 
-    if (decodeit) {
       //decode the sent value
       byte dec_tankId=0;
       byte dec_weapId=0;
       byte dec_power=0;
       byte dec_checksum=0;
+      
       decodeShot(results.value,&dec_tankId, &dec_weapId, &dec_power, &dec_checksum);
+      
+      //calculate what the checksum should be...
       byte calc_checksum = dec_tankId ^ dec_weapId;
       calc_checksum ^= dec_power;
-      totalcount++;
 
       if (calc_checksum != dec_checksum || (!results.decode_type == SONY)) {
         badcount++;
         //printf("*** BAD!! *** calc checksum %i does not match decoded checksum %i!\n",calc_checksum,dec_checksum);
       } else {
-        int percentbad = float(badcount)/float(totalcount) * 100;
-        printf("tank:%i\tweap:%i\tpow:%i\tdcs:%i\tccs:%i\tttl:%i\tbad:%i\tpercent:%i\n",dec_tankId, dec_weapId, dec_power, dec_checksum, calc_checksum, totalcount, badcount, percentbad);
+        //int percentbad = float(badcount)/float(totalcount) * 100;
+        //printf("tank:%i\tweap:%i\tpow:%i\tdcs:%i\tccs:%i\tttl:%i\tbad:%i\tpercent:%i\n",dec_tankId, dec_weapId, dec_power, dec_checksum, calc_checksum, totalcount, badcount, percentbad);
+        printf("tank:%i\t weapon:%i\t power:%i\t decoded checksum:%i\t calculated checksum:%i\n",dec_tankId, dec_weapId, dec_power, dec_checksum, calc_checksum);
       }
-    }
     irreceiv.resume(); // Receive the next value
   }
 // *** RECEIVE IR stuff END ***
