@@ -54,16 +54,17 @@ What we'll cover here...
 
 
 Making large(ish) arduino projects manageable
-==> alternate ide
-==> existing IDE use
+==> alternate ides
+==> existing IDE use (making things easier)
 ==> OO with arduino
 Little bit about game flow/how I solved it
+
 
 CODE! Making the tanks *go*.  (basic motor control)
 CODE! Controlling the tank with the nrf24L01+ radios
 CODE! Encoding values & transmitting/receiving Infrared signals
-CODE! Transferring data arduino to arduino with the EasyTransfer serial library
-CODE! Displaying data out to the user with (cheap!) I2C lcd displays
+CODE! Xfer data arduino to arduino with the EasyTransfer serial library
+CODE! Displaying data out to the user via I2C lcd display
 
 
 
@@ -86,15 +87,17 @@ Multiple tank "shields"
 Extendable to many tanks (more than just 2)
 
 
-Eventually...
+
+Eventually...(scope creep!)
+
 tanks communicate back to host computer
-tanks with different balanced abilities
-  more shields but slower
-  different energy recharge rates
+  host computer displays battle stats
+tanks with different abilities
+  change shield values, recharge rates, speed
 load tank configs by SD card
-rumble feedback
-sound effects
-LASERS!  (because everything's better with lasers...)
+rumble feedback to joystick
+sound & light effects
+LASERS!  (because everything's cooler with lasers...)
 
 
 
@@ -118,7 +121,7 @@ LASERS!  (because everything's better with lasers...)
 
 
 
-Lots of code...and the hardest code was code to *communicate*
+Lots of code...and the hardest bits were code to *communicate*
   
 
 tank <--> controller (2.4ghz radios)
@@ -128,6 +131,7 @@ tank1 <—-> tank1 (EasyTransfer serial)
 
 
 Tank logic was trivial…hardware layer integration was much more challenging
+
 beyond simple, trivial apps organization becomes more important
 Processing (arduino’s code) is based on C/C++
 Some gotchas here and there where full C++ OO isn’t…quite…all there
@@ -206,7 +210,15 @@ If on windows, take a look at MS Visual Studio 2013 + VisualMicro!
 
 On mac, Sublime text with the arduino plugin works well
 
+particularly for this project:
+remove existing lcd,IR, and EasyTransfer libraries from arduino dir!
+(else weird errors)
 
+windows: C:\Program Files\Arduino\libraries
+mac: /Applications/Arduino.app/Contents/Resources/Java/libraries
+
+Remove LiquidCrystal, RobotIRremote, Robot_Control, and Robot_Motor
+as those all contain conflicts with the IR & EasyTransfer libs you'll install
 
 
 
@@ -222,6 +234,7 @@ On mac, Sublime text with the arduino plugin works well
 ---MAKING THINGS MOVE
 [motor control demo]
 
+
 *** flip values for forward/reverse if they're not working
 *** feedback loop (optical encoders) would have made steering easier, 
     code more complex
@@ -235,7 +248,6 @@ On mac, Sublime text with the arduino plugin works well
 
 ---CONTROLLING STUFF 
 [RF24Network demo]
-
 
 
 A NOTE ON NODES...
@@ -255,6 +267,10 @@ so address appropriately!
 
 ---SHOOTING STUFF
 [IR demo]
+
+a sunlight-flooded room will *way* wonk up being able to 
+send/receive reliably. (killed a solid hour troubleshooting that)
+
 
 
 
@@ -291,7 +307,7 @@ define:
 
 // Set the pins on the I2C chip used for LCD connections:
 //                    addr, en,rw,rs,d4,d5,d6,d7,bl,blpol
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
 setup:
 lcd.begin(20,2); // initialize the lcd for 20 chars 4 lines and turn on backlight
@@ -303,8 +319,7 @@ lcd.setCursor(0,1);
 lcd.print("this is only a test");
 
 
-Notes:
-remove existing lcd libraries from arduino! (else weird errors)
+
 
 use i2c scan app to discover lcd's i2c address (not always what is advertised)
 http://gammon.com.au/i2c 
@@ -318,7 +333,6 @@ if (millis() % 100 == 0) {
   lcd.setCursor(0,1);
   lcd.print("msg line 2 goz here");
 }
-
 
 
 ****RF24network
@@ -500,7 +514,7 @@ tayda electronics($0.06ea): http://www.taydaelectronics.com/infrared-led-940nm-5
 
 IR Receivers:
 ebay: search "IR receiver" in Business and Industrial
-amazon:
+amazon($0.70ea): http://smile.amazon.com/gp/product/B008GS4E28/ref=cm_cr_ryp_prd_ttl_sol_0
 tayda electronics($0.66ea): http://www.taydaelectronics.com/ir-receiver-module-38-khz-tsop4838.html
 
 
