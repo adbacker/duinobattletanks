@@ -9,7 +9,7 @@ Tank::Tank()
 {
 }
 
-Tank::Tank(byte id,int recharge, int maxEnergy)// : _shield(0,0),_shot(B0,B0,B0),_weap1(B0,"A",'a',1,1),_weap2(B0,"A",'a',1,1),_weap3(B0,"A",'a',1,1)
+Tank::Tank(byte id,int recharge, int maxEnergy)// : _shield(0,0),_weap1(B0,"A",'a',1,1),_weap2(B0,"A",'a',1,1),_weap3(B0,"A",'a',1,1)
 {
   _id = id;
   _recharge = recharge;

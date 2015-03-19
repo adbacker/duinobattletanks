@@ -167,6 +167,7 @@ good to go with a convention: _myVariable is a local-to-the-class var
 
 
 
+
 ---Oddities
 strange compiler/linker behavior with parameterized constructors containing custom objects
 [demo error -- Tank::Tank]
@@ -174,11 +175,16 @@ solution: add weird line to init objects on constructor line
 -OR-
 add a parameterless constructor (even if you don't use it)
 
-Processing passes by value...so for objects init'ed in main, pointers are your friends
+using enums ~ gotta put them in their own .h file to avoid compile errors
 
+Processing passes by value...so for objects init'ed in main, pointers are your friends
 
 Odd behavior when accessing an object which is a property of an object
 
+mytank.getShield().regen() <-- does not work, but
+mytank.regenShield() <-- DOES work
+
+(where regenShield just calls _shield.regen() within the tank object)
 
 
 

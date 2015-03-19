@@ -419,17 +419,6 @@ void check_network() {
   {
     throttlemix(controller[0],controller[1]);
   }
-  /*if (controller[2] !=0)
-  {
-    //Fire!
-    long encoded = long(controller[2]);
-    Serial.print("Firing: " );
-    Serial.println(encoded);
-    //send the shot back to the sending tank for testing purposes
-    //hit[0]=encoded;
-    //justHit=true;
-    irsend.sendSony(12345,32);  
-  }*/
   
 }
 
