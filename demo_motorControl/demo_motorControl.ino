@@ -46,7 +46,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {
-  
+  /*
   //set motor A's DIRECTION
   digitalWrite(IN1,LOW); //motora rev
   digitalWrite(IN2,HIGH); //motora rev
@@ -83,7 +83,7 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   digitalWrite(IN2,HIGH);
   Serial.println("motor stop, regardless of ENA status...");
   delay(3000);
-  
+  */
   
   
   
@@ -200,7 +200,6 @@ void allMotorStop()
 {
   // writing all control pins HIGH or LOW will
   // bring the motor to a stop
-  // usually all high == brake, all low == coast
   digitalWrite(IN1,LOW); //motora 
   digitalWrite(IN2,LOW); //motora 
   digitalWrite(IN3,LOW); //motorb 

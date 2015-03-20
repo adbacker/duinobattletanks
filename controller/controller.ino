@@ -108,6 +108,7 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     handleWeaponSwitch();
     handleControllerUpdate(); //send controller & firing values
     tank.regen();  //update tank energy
+    //tank.getShield().regen(); //this doesn't work, but...
     tank.regenShield(); //this *does* work.  WTH?!
     check_network(); //check the network queue to see if we've received anything
   } 

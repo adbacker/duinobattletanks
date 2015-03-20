@@ -1,71 +1,57 @@
-Still to do...
-basic video for intro
---music: flight of the valkyries--
-
-=> tank zooming, left to right
-right to left
-spins in place
-POV over "shoulder", shoots & kicks back, pause, shoots again
-side view, hit & shakes
-split screen:
-top: side view, shoots 3x, inset of joystick + lcd showing energy depletion
-bottom: side view, gets hit 3x, inset of lcd showing tank taking damage
-close up of thumb switching to big weapon
-shot of tank turning tail and running (top-ish)
-shot of another tank "persuing"
-vertical split screen
-left: tank1 shoots, right: top, tank2 dies-bottom, tank2 controller shows "you have died"
-
-
-
-
-review presentation, time it
-
-
-
-
-
-
-
-
 
 2015 Boise Code Camp
-
-intro (me!)
-
-
-Lessons learned while building a pair of arduino-based battle tanks
+Beyond the Blink
+Arduino RC Tank Game
+http://tiny.cc/duinotanks <== code and these notes
 
 
-
-What do they look like?
-<demo video...or live presentation>
-
-
-
-
-
-
-
-
-
-
-What we'll cover here...
+::What we'll cover here...(so you know if you want to stay)::
 
 
 Making large(ish) arduino projects manageable
 ==> alternate ides
 ==> existing IDE use (making things easier)
 ==> OO with arduino
-Little bit about game flow/how I solved it
 
+Little bit about game flow/how I solved it
 
 CODE! Making the tanks *go*.  (basic motor control)
 CODE! Controlling the tank with the nrf24L01+ radios
 CODE! Encoding values & transmitting/receiving Infrared signals
-CODE! Xfer data arduino to arduino with the EasyTransfer serial library
+CODE! Xfer data arduino to arduino w/EasyTransfer softserial library
 CODE! Displaying data out to the user via I2C lcd display
 
+Q&A
+
+NOT A LOT OF:
+hardware discussion (unless it directly relates to the code)
+how much did it cost (because my wife might find out)
+
+
+
+
+
+
+
+Let's get started!
+
+
+
+
+
+
+
+[video]
+
+
+
+
+
+
+
+
+Aaron Backer
+qa automation engineer for Kount
 
 
 
@@ -97,6 +83,7 @@ tanks with different abilities
 load tank configs by SD card
 rumble feedback to joystick
 sound & light effects
+degrading performance as tank is hit
 LASERS!  (because everything's cooler with lasers...)
 
 
@@ -106,6 +93,39 @@ LASERS!  (because everything's cooler with lasers...)
 
 
 
+
+
+
+
+
+
+Sooo...if I wanted to do this ~ coding aside, how much would it cost?
+<shhh!!>
+
+2x robot chassis:         $24       2x l298 motor controllers   $7
+4x 2.4ghz radio           $8
+2x arduino uno clones     $14
+2x arduino nano clones    $7
+2x arduino pro mini       $5
+2x 16x2 LCD               $5
+2x I2C lcd backpack       $2
+8x IR sensors             $7
+2x IR LED                 $2
+2x cheap headlamps        $5
+2x 6x AA battery box      $7
+2x thrift store joystick  $10
+standoffs                 $8
+2x batteries (or cases)   $7 - $$$$$
+I used my mini 12v drill batteries as they were lightweight,
+suited for high discharge, and rechargeable.  And I already had them.
+
+Otherwise, I probably would have just gone with another two 6x 
+(or 8x) AA cases...
+
+
+GRAND TOTAL.....          $111  (yikes!)
+
+(note: didn't cost me that much, as I had many of the materials...)
 
 
 
@@ -131,12 +151,24 @@ tank1 <—-> tank1 (EasyTransfer serial)
 
 
 Tank logic was trivial…hardware layer integration was much more challenging
+were problems code...or hardware?!!
+(hint: use the libraries sample apps...simple!)
+
 
 beyond simple, trivial apps organization becomes more important
-Processing (arduino’s code) is based on C/C++
-Some gotchas here and there where full C++ OO isn’t…quite…all there
 
-Some things you think *should* work…just don’t. (quite)
+loop() {
+  analogRead(0); //read a sensor
+  digitalWrite(14,HIGH); //light an led!
+  delay(1000) //wait a sec...
+}
+//simple, single purpose/single task programs
+
+
+
+while Processing (arduino’s code) is based on C/C++,
+some gotchas here and there where full C++ OO isn’t…quite…all there
+So some things you think *should* work…just don’t. (quite)
 
 
 
@@ -163,23 +195,34 @@ Some things you think *should* work…just don’t. (quite)
 
 ---Arduino OO 101 - Classes, variables, member functions
 
-Define a header
+Define a header for enums, custom types if passed to functions!
+
 note: all member functions (public or private) _must_ be in the header
+
 define your member variables in here too
+
 good to go with a convention: _myVariable is a local-to-the-class var
-(with a nice color coding IDE not such a big deal)
+
+(with a nice color coding IDE not such a big deal...see below)
 
 
 
 
----Oddities
+
+
+
+
+
+
+
+---More Oddities
 strange compiler/linker behavior with parameterized constructors containing custom objects
 [demo error -- Tank::Tank]
 solution: add weird line to init objects on constructor line
 -OR-
 add a parameterless constructor (even if you don't use it)
 
-using enums ~ gotta put them in their own .h file to avoid compile errors
+using enums ~ gotta put them in their own .h file to avoid compile errors when passed as params
 
 Processing passes by value...so for objects init'ed in main, pointers are your friends
 
@@ -210,15 +253,21 @@ If on windows, take a look at MS Visual Studio 2013 + VisualMicro!
 
 On mac, Sublime text with the arduino plugin works well
 
-particularly for this project:
+(where-to-get-em @ end of notes)
+
+
+
+particularly for this project -- IMPORTANT!
+
 remove existing lcd,IR, and EasyTransfer libraries from arduino dir!
-(else weird errors)
+(else weird compile errors, no good worky)
 
 windows: C:\Program Files\Arduino\libraries
 mac: /Applications/Arduino.app/Contents/Resources/Java/libraries
 
-Remove LiquidCrystal, RobotIRremote, Robot_Control, and Robot_Motor
-as those all contain conflicts with the IR & EasyTransfer libs you'll install
+Remove these dirs: LiquidCrystal, RobotIRremote, Robot_Control, and Robot_Motor
+
+all contain conflicts with the IR & EasyTransfer libs you'll install
 
 
 
@@ -251,14 +300,23 @@ as those all contain conflicts with the IR & EasyTransfer libs you'll install
 
 
 A NOTE ON NODES...
-node 00 is root
+node 00 is root -- there is a TREE STRUCTURE!!
+
 nodes 01 - 05 are children
+
 node 012 is the first child of node 02
 node 0312 is the third child of node 012
 
 a node, coming up, will need to find it's parent
 so address appropriately!
+
 (eg: someone will need to have node 00 as it's parent)
+
+Side effect of the network library being used for mesh networks
+
+
+
+
 
 
 
@@ -271,6 +329,23 @@ so address appropriately!
 a sunlight-flooded room will *way* wonk up being able to 
 send/receive reliably. (killed a solid hour troubleshooting that)
 
+multiple receivers don't work with default library, use forked library 
+(URL is @ end of notes)
+
+ALSO...one UNO didn't have enough OOMPH to manage checking 4 IR receivers 
+AND do network communication AND send IR.  So I added a second arduino (pro mini)
+to each arduino uno that ONLY does the IR checking.
+
+
+
+Sending a single value is (relatively) easy...
+
+I wanted to send multiple bits of data...solution: 
+4 4bit numbers (0-15) bitmashed together into one long (32 bit) number!
+
+
+
+
 
 
 
@@ -282,6 +357,7 @@ send/receive reliably. (killed a solid hour troubleshooting that)
 [EasyTransfer demo]
 
 
+very easy...two arbitrary digital ports between 2 arduinos
 
 
 
@@ -301,28 +377,17 @@ send/receive reliably. (killed a solid hour troubleshooting that)
 
 ****LCD
 
-define:
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 
-// Set the pins on the I2C chip used for LCD connections:
-//                    addr, en,rw,rs,d4,d5,d6,d7,bl,blpol
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
-
-setup:
-lcd.begin(20,2); // initialize the lcd for 20 chars 4 lines and turn on backlight
-
-writing:
-lcd.setCursor(0,0);
-lcd.print("This is a test");
-lcd.setCursor(0,1);
-lcd.print("this is only a test");
-
-
+the super-cheap $1 I2C to LCD adapters I bought on ebay needed this particular advice:
+http://forum.arduino.cc/index.php?topic=157817.0
+which references this page:
+http://arduino-info.wikispaces.com/LCD-Blue-I2C
 
 
 use i2c scan app to discover lcd's i2c address (not always what is advertised)
 http://gammon.com.au/i2c 
+
+
 
 constant updating will cause flicker
 easy way to fix that, only update every 100 milliseconds:
@@ -335,72 +400,12 @@ if (millis() % 100 == 0) {
 }
 
 
-****RF24network
-
-define:
-
-#include <RF24Network.h>
-#include <RF24.h>
-#include <SPI.h>
-
-#define CE_PIN   9 //these can differ
-#define CSN_PIN 10 //I tested 7 and 8 and they worked
-RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
-// Network uses that radio
-RF24Network network(radio);
-// Address of our node
-const uint16_t this_node = 0;
-// Address of the other node
-const uint16_t other_node = 1;
 
 
 
 
-setup:
-SPI.begin();
-radio.begin();
-network.begin(/*channel*/ 90, /*node address*/ this_node);
-struct controller {
-	long encodedShot;
-	int xval;
-	int yval;
-}
-
-using:
-//put this in your main loop:
-network.update();     // Pump the network regularly
-
---sending
-
-int controller[3];
 
 
-controller[0] = xval; //x throttle value
-controller[1] = yval; //y throttle value
-controller[2] = encodedShot; //0 if not firing, 
-//send our controller values
-RF24NetworkHeader header(/*to node*/ other_node);
-bool ok = network.write(header,&controller,sizeof(controller));
-if (ok)
-  Serial.println("ok.");
-else
-  Serial.println("failed.");
-
-
---receiving
-  while ( network.available() )
-  {
-    // If so, grab it and print it out
-    RF24NetworkHeader header;
-    network.read(header,&controller,sizeof(controller));
-  }
-  long xval = controller[0];
-  int yval = controller[1];
-  
-  if (controller[0] !=0 || controller[1] !=0)
-  {
-    //throttlemix(controller[0],controller[1]);
-  }
 
 
 
@@ -477,6 +482,10 @@ ebay: search "arduino nano"
 arduino pro minis:
 ebay: search "arduino pro mini"
 --notes:
+**WARNING** the cheapest of these often don't have the arduino bootloader burned to the chip.  This means *YOU* will need  to do it!  However, at minimum you can use one of your UNO's as an ISP (in system programmer)  http://arduino.cc/en/Tutorial/ArduinoISP
+
+( I happened to have one of these: http://www.evilmadscientist.com/2011/isp-shield-kit-version-2-0/ )
+
 you'll need a usb-to-serial converter (below)
 watch out..some are 5v, some are 3.3v, and some can do either.
 
@@ -517,6 +526,30 @@ ebay: search "IR receiver" in Business and Industrial
 amazon($0.70ea): http://smile.amazon.com/gp/product/B008GS4E28/ref=cm_cr_ryp_prd_ttl_sol_0
 tayda electronics($0.66ea): http://www.taydaelectronics.com/ir-receiver-module-38-khz-tsop4838.html
 
+
+Arduino UNO pcbs:
+ebay: $12 for 10
+http://www.ebay.com/itm/10x-Prototype-PCB-for-Arduino-UNO-R3-Shield-Board-DIY-/371147678203?pt=LH_DefaultDomain_0&hash=item566a2021fb
+
+Arduino through-headers
+10 full sets for $10.50
+http://www.ebay.com/itm/10x-Sets-40pcs-Arduino-Stackable-Female-Header-Pin-Shield-Kit-6-8-10-Tall-UNO-/161640352887?pt=LH_DefaultDomain_0&hash=item25a2840c77
+
+pcb standoffs ($8 for 50)
+http://www.amazon.com/M3x6mm-Female-Pillar-Standoff-Spacer/dp/B00GWF60AG/ref=sr_1_16?s=industrial&ie=UTF8&qid=1426810741&sr=1-16&keywords=standoffs
+
+cheap ebay headlamp repurposed as cannon magnifier
+(for range...probably didn't need this)
+ebay: search for "cree headlamp", choose "buy it now", sort in ascending price+shipping, scroll a bit and you'll find it.  Looks like this, but all black plastic (and it'll be about $2.50 - $3.00)  http://www.image-tmart.com/images/E/E02468/5W-300-Lumen-6-Modes-CREE-LED-Waterproof-Focus-Headlamp-Black-(3AAA)-01.jpg
+
+http://www.ebay.com/itm/CREE-1000LM-LED-Headlamp-Flashlight-Zoomable-Headlight-Torch-Bike-Riding-Lamp-LN-/381179391614?pt=LH_DefaultDomain_0&hash=item58c00fee7e
+
+6x AA battery box with switch:
+ebay (~$3.50): search "6 aa battery holder switch"
+http://www.ebay.com/itm/Black-12V-6x-AA-Size-Battery-Holder-Box-Case-With-Cover-ON-OFF-Switch-Wire-Lead-/381152311502?pt=LH_DefaultDomain_0&hash=item58be72b8ce
+
+
+TOOLS:
 
 
 

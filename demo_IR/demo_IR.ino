@@ -12,20 +12,20 @@ IRrecv irreceiv(IR_RECEIVE_PIN);
 decode_results results;
 
 //decoding the sent value?
-boolean decodeit = true;
+boolean decodeit = true; //demostuff - not strictly necessary
 byte incomingByte=0; //necessary for serial read
-long irSentValue=0L;
-long encoded=0L;
+long irSentValue=0L; //demostuff - not strictly necessary
+long encoded=0L; //demostuff - not strictly necessary
 
-int badcount=0;
-int totalcount=0;
+int badcount=0; //demostuff - not strictly necessary
+int totalcount=0; //demostuff - not strictly necessary
 
 void setup() {
-	Serial.begin(57600);
+  Serial.begin(57600);
   printf_begin();
   randomSeed(analogRead(0));
   Serial.println("starting IR ...");
-	irreceiv.enableIRIn();  //start the IR receiver
+  irreceiv.enableIRIn();  //start the IR receiver
 }
 
 void loop() {  //BEGIN main loop
@@ -34,7 +34,12 @@ void loop() {  //BEGIN main loop
 //          printf("up %i seconds\n",millis()/1000);
 //        }
   if (irreceiv.decode(&results)) {
-
+    /*if (results.decode_type == SONY) {
+      printf("received %i\n",results.value);
+    }*/
+    
+    
+    
       //decode the sent value
       byte dec_tankId=0;
       byte dec_weapId=0;
@@ -47,14 +52,15 @@ void loop() {  //BEGIN main loop
       byte calc_checksum = dec_tankId ^ dec_weapId;
       calc_checksum ^= dec_power;
 
-      if (calc_checksum != dec_checksum || (!results.decode_type == SONY)) {
-        badcount++;
-        //printf("*** BAD!! *** calc checksum %i does not match decoded checksum %i!\n",calc_checksum,dec_checksum);
+      if (calc_checksum != dec_checksum) {
+        //badcount++;
+        printf("*** BAD!! *** calc checksum %i does not match decoded checksum %i!\n",calc_checksum,dec_checksum);
       } else {
         //int percentbad = float(badcount)/float(totalcount) * 100;
         //printf("tank:%i\tweap:%i\tpow:%i\tdcs:%i\tccs:%i\tttl:%i\tbad:%i\tpercent:%i\n",dec_tankId, dec_weapId, dec_power, dec_checksum, calc_checksum, totalcount, badcount, percentbad);
         printf("tank:%i\t weapon:%i\t power:%i\t decoded checksum:%i\t calculated checksum:%i\n",dec_tankId, dec_weapId, dec_power, dec_checksum, calc_checksum);
-      }
+      } 
+      
     irreceiv.resume(); // Receive the next value
   }
 // *** RECEIVE IR stuff END ***

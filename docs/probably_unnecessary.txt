@@ -26,6 +26,8 @@ Tank:
 
 
 
+
+
 --super quick refresher on pointer notation, dereferencing, etc (SKIP ME!)
 
 int a;  //a contains an integer value..

@@ -6,8 +6,8 @@
 #include "printf.h"
 
 
-#define myuno
-//#define mymini
+//#define myuno
+#define mymini
 
 
 /////////////////////////////////////////////

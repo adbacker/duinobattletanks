@@ -26,6 +26,7 @@
 /*-----( Import needed libraries )-----*/
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
+#include <SPI.h>
 #include <Wire.h>
 #include "printf.h"
 
@@ -44,16 +45,16 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 }//--(end setup )---
 
 
-void loop()   /****** LOOP: RUNS CONSTANTLY ******/
-{  
-  
-  if (millis()%1000==0) {
-  secondCounter == millis()/1000;
+void loop() {  /****** LOOP: RUNS CONSTANTLY ******/
+
+  unsigned long now=millis();
+  if (now%1000==0) {
+  secondCounter = now/1000;
 
   lcd.setCursor(0,0);
   lcd.print("Counting up...");
-
-  String line2 = "*** " + secondCounter + " ***";
+  //String seconds = String(secondCounter);
+  String line2 = "*** " + String(secondCounter) + " ***";
 
   lcd.setCursor(0,1);
   lcd.print(line2);
