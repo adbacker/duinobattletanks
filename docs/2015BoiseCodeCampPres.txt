@@ -8,17 +8,15 @@ http://tiny.cc/duinotanks <== code and these notes
 ::What we'll cover here...(so you know if you want to stay)::
 
 
-Making large(ish) arduino projects manageable
+Making large(ish) arduino projects manageable:
 ==> alternate ides
 ==> existing IDE use (making things easier)
 ==> OO with arduino
 
-Little bit about game flow/how I solved it
-
 CODE! Making the tanks *go*.  (basic motor control)
-CODE! Controlling the tank with the nrf24L01+ radios
-CODE! Encoding values & transmitting/receiving Infrared signals
-CODE! Xfer data arduino to arduino w/EasyTransfer softserial library
+CODE! Super cheap 2.4ghz wireless nrf24L01+ radios...how to use 'em
+CODE! Pew! Pew!  sending/receiving info with IR
+CODE! Getting arduinos to talk (w/EasyTransfer softserial library)
 CODE! Displaying data out to the user via I2C lcd display
 
 Q&A
@@ -326,6 +324,7 @@ Side effect of the network library being used for mesh networks
 ---SHOOTING STUFF
 [IR demo]
 
+
 a sunlight-flooded room will *way* wonk up being able to 
 send/receive reliably. (killed a solid hour troubleshooting that)
 
@@ -355,6 +354,12 @@ I wanted to send multiple bits of data...solution:
 
 ---TALK AMONGST YOURSELVES
 [EasyTransfer demo]
+
+Direct, wired communication between 
+WHY would you do this?!
+
+overworked arduino...used up all ports...used up all timers...
+(#1 and #3 in my case)
 
 
 very easy...two arbitrary digital ports between 2 arduinos
