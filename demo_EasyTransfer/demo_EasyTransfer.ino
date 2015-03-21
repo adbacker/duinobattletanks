@@ -17,7 +17,8 @@
 
 //I connected different ports on each arduino..
 #ifdef mymini
-SoftwareSerial mySerial(4, 5);
+SoftwareSerial mySerial(4, 5); //just ports that I chose, 
+                               //you can choose any!
 #endif
 
 #ifdef myuno

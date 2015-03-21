@@ -1,29 +1,32 @@
-
 2015 Boise Code Camp
 Beyond the Blink
 Arduino RC Tank Game
-http://tiny.cc/duinotanks <== code and these notes
+http://tiny.cc/duinotanks 
+
+^^^^ all code, examples, and these notes
 
 
-::What we'll cover here...(so you know if you want to stay)::
+
+:: COVERING ::
 
 
 Making large(ish) arduino projects manageable:
-==> alternate ides
-==> existing IDE use (making things easier)
+==> other IDEs
 ==> OO with arduino
 
-CODE! Making the tanks *go*.  (basic motor control)
 CODE! Super cheap 2.4ghz wireless nrf24L01+ radios...how to use 'em
 CODE! Pew! Pew!  sending/receiving info with IR
 CODE! Getting arduinos to talk (w/EasyTransfer softserial library)
-CODE! Displaying data out to the user via I2C lcd display
+CODE! Displaying data out to the user via I2C lcd display 
+CODE! Making the tanks *go*. - basic motor control (time permitting)
 
 Q&A
 
+
 NOT A LOT OF:
-hardware discussion (unless it directly relates to the code)
-how much did it cost (because my wife might find out)
+hardware discussion (unless related to code) because of time
+
+
 
 
 
@@ -51,7 +54,7 @@ Let's get started!
 Aaron Backer
 qa automation engineer for Kount
 
-
+( great place, check us out @ www.kount.com! )
 
 
 
@@ -65,10 +68,13 @@ qa automation engineer for Kount
 
 Original goals:
 
+Suuuuper cheap RC 
 Tanks should identify who shot them and with what
 Selectable weapons do differing amounts of damage
-Multiple tank "shields"
+Multiple "shields" individually damaged
 Extendable to many tanks (more than just 2)
+
+
 
 
 
@@ -121,11 +127,7 @@ Otherwise, I probably would have just gone with another two 6x
 (or 8x) AA cases...
 
 
-GRAND TOTAL.....          $111  (yikes!)
-
-(note: didn't cost me that much, as I had many of the materials...)
-
-
+GRAND TOTAL.....          $111  (yikes!) (ssshhhh!)
 
 
 
@@ -141,20 +143,21 @@ GRAND TOTAL.....          $111  (yikes!)
 
 Lots of code...and the hardest bits were code to *communicate*
   
-
 tank <--> controller (2.4ghz radios)
 tank1 <--> tank2 (IR beam)
 user <-- tank (I2C LCD display)
 tank1 <—-> tank1 (EasyTransfer serial)
-
 
 Tank logic was trivial…hardware layer integration was much more challenging
 were problems code...or hardware?!!
 (hint: use the libraries sample apps...simple!)
 
 
+
+
 beyond simple, trivial apps organization becomes more important
 
+many arduino projects:
 loop() {
   analogRead(0); //read a sensor
   digitalWrite(14,HIGH); //light an led!
@@ -164,11 +167,19 @@ loop() {
 
 
 
+
+
+
+
+
+
+
 while Processing (arduino’s code) is based on C/C++,
 some gotchas here and there where full C++ OO isn’t…quite…all there
 So some things you think *should* work…just don’t. (quite)
 
-
+if you think something should work...and isn't, 
+don't bang your head ~ do the google.
 
 
 
@@ -216,9 +227,10 @@ good to go with a convention: _myVariable is a local-to-the-class var
 ---More Oddities
 strange compiler/linker behavior with parameterized constructors containing custom objects
 [demo error -- Tank::Tank]
+
 solution: add weird line to init objects on constructor line
 -OR-
-add a parameterless constructor (even if you don't use it)
+add a parameterless constructor (even if you don't use it) <<-- easier, cleaner
 
 using enums ~ gotta put them in their own .h file to avoid compile errors when passed as params
 
@@ -246,8 +258,7 @@ mytank.regenShield() <-- DOES work
 
 Syntax highlighting for larger projects is *very* nice...
 
-If on windows, take a look at MS Visual Studio 2013 + VisualMicro!
-[demo]
+If on windows, take a look at MS Visual Studio 2013 Community Ed + VisualMicro!
 
 On mac, Sublime text with the arduino plugin works well
 
@@ -258,7 +269,7 @@ On mac, Sublime text with the arduino plugin works well
 particularly for this project -- IMPORTANT!
 
 remove existing lcd,IR, and EasyTransfer libraries from arduino dir!
-(else weird compile errors, no good worky)
+(else weird compile errors. no worky.)
 
 windows: C:\Program Files\Arduino\libraries
 mac: /Applications/Arduino.app/Contents/Resources/Java/libraries
@@ -281,6 +292,9 @@ all contain conflicts with the IR & EasyTransfer libs you'll install
 ---MAKING THINGS MOVE
 [motor control demo]
 
+if we don't make it to this, good tutorial at:
+
+http://tronixlabs.com/news/tutorial-l298n-dual-motor-controller-module-2a-and-arduino/ 
 
 *** flip values for forward/reverse if they're not working
 *** feedback loop (optical encoders) would have made steering easier, 
@@ -323,6 +337,7 @@ Side effect of the network library being used for mesh networks
 
 ---SHOOTING STUFF
 [IR demo]
+aaron: reminder -> both tanks need batt power for this to work!
 
 
 a sunlight-flooded room will *way* wonk up being able to 
@@ -364,7 +379,8 @@ overworked arduino...used up all ports...used up all timers...
 
 very easy...two arbitrary digital ports between 2 arduinos
 
-
+other EasyTransfer implimentations use I2C (same as lcd), or VirtualWire
+(for other wireless radios)
 
 
 
@@ -396,6 +412,7 @@ http://gammon.com.au/i2c
 
 constant updating will cause flicker
 easy way to fix that, only update every 100 milliseconds:
+(or only update if necessary)
 
 if (millis() % 100 == 0) {
 	lcd.setCursor(0,0);
