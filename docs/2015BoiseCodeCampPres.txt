@@ -2,8 +2,10 @@
 Beyond the Blink
 Arduino RC Tank Game
 http://tiny.cc/duinotanks 
-
 ^^^^ all code, examples, and these notes
+
+happy to answer questions:
+aaron.backer aht gmail dhot com
 
 
 
